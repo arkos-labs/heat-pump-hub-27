@@ -13,7 +13,7 @@ const MOCK_APPOINTMENTS: (Appointment & { clientName: string })[] = [
         id: "rdv-1",
         date: new Date().toISOString(), // Today
         time: "14:00",
-        type: "visite_technique",
+        type: "installation",
         status: "planifie",
         notes: "Vérifier l'emplacement du groupe extérieur",
         clientName: "Jean Dupont"

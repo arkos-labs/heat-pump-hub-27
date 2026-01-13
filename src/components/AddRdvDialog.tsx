@@ -9,13 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Appointment } from '@/types/client';
 
 interface AddRdvDialogProps {
@@ -26,10 +19,15 @@ interface AddRdvDialogProps {
 }
 
 export function AddRdvDialog({ open, onOpenChange, onAdd, clientName }: AddRdvDialogProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    date: string;
+    time: string;
+    type: 'installation';
+    notes: string;
+  }>({
     date: '',
     time: '09:00',
-    type: 'visite_technique' as 'visite_technique' | 'installation' | 'suivi',
+    type: 'installation',
     notes: '',
   });
 
@@ -39,7 +37,7 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName }: AddRdvDi
     setFormData({
       date: '',
       time: '09:00',
-      type: 'visite_technique',
+      type: 'installation',
       notes: '',
     });
     onOpenChange(false);
@@ -75,26 +73,12 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName }: AddRdvDi
             </div>
           </div>
 
+          {/* Type fixed to installation (hidden from user or shown as text) */}
           <div className="space-y-2">
-            <Label htmlFor="type">Type de rendez-vous</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(v) =>
-                setFormData({
-                  ...formData,
-                  type: v as 'visite_technique' | 'installation' | 'suivi',
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="visite_technique">Visite technique</SelectItem>
-                <SelectItem value="installation">Installation</SelectItem>
-                <SelectItem value="suivi">Suivi</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Type de rendez-vous</Label>
+            <div className="p-2 border rounded-md bg-muted text-muted-foreground text-sm">
+              Installation
+            </div>
           </div>
 
           <div className="space-y-2">

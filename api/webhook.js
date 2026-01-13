@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Configuration Supabase
 const SUBAPASE_URL = 'https://kcrfubblydhfmyozouez.supabase.co';
-const SUPABASE_KEY = 'sb_secret_TmmlEiZM3yyaDrCjPfq7lg_YN0EAnUD';
+const SUPABASE_KEY = 'sb_publishable_7cUHMQ_E1Y4iGzS3dMOLIg_Xa6xNg1N';
 
 // Initialisation du client
 const supabase = createClient(SUBAPASE_URL, SUPABASE_KEY);

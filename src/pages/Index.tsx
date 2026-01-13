@@ -129,13 +129,36 @@ const Index = () => {
     }
   }
 
+  // Helper to extract Qhare ID from notes
+  const getQhareId = (client: Client): string | null => {
+    if (!client.notes) return null;
+    const match = client.notes.match(/ID Qhare:\s*([a-zA-Z0-9-]+)/);
+    return match ? match[1] : null;
+  };
+
+  const syncWithQhare = async (client: Client, etat: string | undefined, sous_etat: string | undefined) => {
+    const qhareId = getQhareId(client);
+    if (!qhareId) return;
+
+    try {
+      // On appelle notre propre API route qui fait proxy vers Qhare
+      await fetch('/api/update-qhare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qhareId, etat, sous_etat })
+      });
+      toast.success("Statut Qhare mis à jour");
+    } catch (e) {
+      console.error("Erreur sync Qhare", e);
+      toast.error("Erreur synchro Qhare");
+    }
+  };
+
   const handleAddRdv = async (rdvData: Omit<Appointment, 'id'>) => {
     if (!selectedClient) return;
 
     // 1. Vérification de conflit de date
     const newRdvDate = new Date(rdvData.date);
-
-    // On cherche si un AUTRE client a déjà un RDV ce jour-là
     const conflictingClient = clients.find(c =>
       c.rdvs.some(r => isSameDay(new Date(r.date), newRdvDate))
     );
@@ -145,7 +168,7 @@ const Index = () => {
         description: "Un seul chantier/RDV par jour autorisé.",
         duration: 5000,
       });
-      return; // On arrête tout, pas de sauvegarde
+      return;
     }
 
     const newRdv: Appointment = {
@@ -168,10 +191,25 @@ const Index = () => {
     try {
       await clientService.addAppointment(selectedClient.id, newRdv);
       toast.success("Rendez-vous planifié");
+
+      // SYNC QHARE: Sous-état -> Planifié
+      await syncWithQhare(selectedClient, undefined, 'Planifié');
+
     } catch (error) {
       console.error(error);
       toast.error("Erreur lors de la planification");
     }
+  };
+
+  // Function to mark client as finished
+  const handleMarkAsTermine = async (client: Client) => {
+    if (!confirm("Confirmer la fin du chantier ? Le client sera archivé dans 'Terminés'.")) return;
+
+    // Update local & DB
+    await handleStatusChange('termine');
+
+    // SYNC QHARE: Sous-état -> Terminé (ou validé ?)
+    await syncWithQhare(client, undefined, 'Terminé');
   };
 
   return (

@@ -145,12 +145,18 @@ const Index = () => {
 
     try {
       // On appelle notre propre API route qui fait proxy vers Qhare
-      await fetch('/api/update-qhare', {
+      const response = await fetch('/api/update-qhare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ qhareId, etat, sous_etat })
       });
-      toast.success("Statut Qhare mis à jour");
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Qhare OK : " + JSON.stringify(result.data));
+      } else {
+        toast.error("Qhare Erreur : " + JSON.stringify(result));
+      }
     } catch (e) {
       console.error("Erreur sync Qhare", e);
       toast.error("Erreur synchro Qhare");

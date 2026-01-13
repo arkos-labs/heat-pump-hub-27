@@ -16,20 +16,16 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing qhareId' });
     }
 
-    // Force Uppercase for status to match Qhare's likely format (based on screenshot "À PLANIFIER")
-    const formattedSousEtat = sous_etat ? sous_etat.toUpperCase() : undefined;
-    const formattedEtat = etat ? etat.toUpperCase() : undefined;
-
-    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${formattedEtat}, Sous-état: ${formattedSousEtat}`);
+    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${etat}, Sous-état: ${sous_etat}`);
 
     try {
         // FORCE URL Parameters: This is the most reliable way for this type of API
         const params = new URLSearchParams();
         params.append('access_token', ACCESS_TOKEN);
         params.append('id', qhareId);
-        if (formattedEtat) params.append('etat', formattedEtat);
+        if (etat) params.append('etat', etat);
         // Note: The doc says "sous_etat", ensure strictly this spelling
-        if (formattedSousEtat) params.append('sous_etat', formattedSousEtat);
+        if (sous_etat) params.append('sous_etat', sous_etat);
 
         const targetUrl = `https://qhare.fr/api/lead/update?${params.toString()}`;
         console.log('Calling Qhare URL:', targetUrl.replace(ACCESS_TOKEN, 'HIDDEN'));

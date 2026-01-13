@@ -9,10 +9,6 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
     const { qhareId, etat, sous_etat } = req.body;
     const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
 
@@ -20,34 +16,35 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing qhareId' });
     }
 
-    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${etat}, Sous-état: ${sous_etat}`);
+    // Force Uppercase for status to match Qhare's likely format (based on screenshot "À PLANIFIER")
+    const formattedSousEtat = sous_etat ? sous_etat.toUpperCase() : undefined;
+    const formattedEtat = etat ? etat.toUpperCase() : undefined;
+
+    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${formattedEtat}, Sous-état: ${formattedSousEtat}`);
 
     try {
-        // Construction de l'URL avec les query params car l'API Qhare semble fonctionner en POST mais avec des params
-        // ou en Body x-www-form-urlencoded. La doc dit "Parametre ...", souvent c'est du form-data ou urlencoded.
-        // On va tenter en JSON body standard d'abord, si echec on tentera URL search params.
-
-        // Tentative 1: URL Search Params (souvent le cas avec les API PHP/Legacy décrite comme ça)
+        // FORCE URL Parameters: This is the most reliable way for this type of API
         const params = new URLSearchParams();
         params.append('access_token', ACCESS_TOKEN);
         params.append('id', qhareId);
-        if (etat) params.append('etat', etat);
-        if (sous_etat) params.append('sous_etat', sous_etat);
+        if (formattedEtat) params.append('etat', formattedEtat);
+        // Note: The doc says "sous_etat", ensure strictly this spelling
+        if (formattedSousEtat) params.append('sous_etat', formattedSousEtat);
 
-        // On essaie d'envoyer en x-www-form-urlencoded
-        const response = await fetch('https://qhare.fr/api/lead/update', {
+        const targetUrl = `https://qhare.fr/api/lead/update?${params.toString()}`;
+        console.log('Calling Qhare URL:', targetUrl.replace(ACCESS_TOKEN, 'HIDDEN'));
+
+        const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params.toString()
+                'Content-Type': 'application/json', // Some servers expect this even with empty body
+            }
         });
 
         const result = await response.json();
-        console.log('Qhare API Response:', result);
+        console.log('Qhare API Response:', JSON.stringify(result));
 
         if (result.success === false || result.error) {
-            // Si échec, on renvoie l'erreur
             return res.status(500).json({ success: false, qhareInfo: result });
         }
 

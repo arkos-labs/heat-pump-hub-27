@@ -5,6 +5,7 @@ export interface Appointment {
   date: string;
   time: string;
   type: 'visite_technique' | 'installation' | 'suivi';
+  status?: 'planifie' | 'termine' | 'annule';
   notes?: string;
 }
 

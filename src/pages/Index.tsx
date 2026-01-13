@@ -108,6 +108,12 @@ const Index = () => {
     try {
       await clientService.updateClient(selectedClient.id, { status });
       toast.success("Statut mis à jour");
+
+      // SYNC QHARE: Si le statut passe à "Terminé", on prévient Qhare
+      if (status === 'termine') {
+        await syncWithQhare(updatedClient, undefined, 'Terminé');
+      }
+
     } catch (error) {
       console.error(error);
       toast.error("Erreur lors de la mise à jour du statut");

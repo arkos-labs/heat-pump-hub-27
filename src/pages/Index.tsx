@@ -252,8 +252,8 @@ const Index = () => {
       await clientService.updateClient(selectedClient.id, { status: 'en_cours' });
       toast.success("Jour J simulé : Client passé 'En cours'");
 
-      // 3. Sync Qhare -> En cours (Orthographe exacte de la liste)
-      await syncWithQhare(updatedClient, undefined, "En cours");
+      // 3. Sync Qhare -> Installation en cours (Terme plus précis que "En cours")
+      await syncWithQhare(updatedClient, undefined, "Installation en cours");
 
     } catch (e) {
       console.error(e);

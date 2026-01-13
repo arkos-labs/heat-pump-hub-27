@@ -111,8 +111,8 @@ const Index = () => {
 
       // SYNC QHARE: Si le statut passe à "Terminé", on prévient Qhare
       if (status === 'termine') {
-        // On passe l'ÉTAT principal à "Terminer" et on sélectionne le sous-état "Espace" (hack pour vider)
-        await syncWithQhare(updatedClient, 'Terminer', ' ');
+        // On passe l'ÉTAT principal à "Terminer" et on envoie "null" pour supprimer le sous-état
+        await syncWithQhare(updatedClient, 'Terminer', 'null');
       }
 
     } catch (error) {

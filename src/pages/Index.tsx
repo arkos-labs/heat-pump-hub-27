@@ -111,8 +111,17 @@ const Index = () => {
 
       // SYNC QHARE: Si le statut passe à "Terminé", on prévient Qhare
       if (status === 'termine') {
-        // On passe l'ÉTAT principal à "Terminer" et on envoie "null" pour supprimer le sous-état
-        await syncWithQhare(updatedClient, 'Terminer', 'null');
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        // Retrouver la date du RDV d'installation (s'il y en a un)
+        const installRdv = updatedClient.rdvs.find(r => r.type === 'installation' || r.type === 'visite_technique');
+        const datePose = installRdv ? installRdv.date : undefined;
+
+        // On passe l'ÉTAT principal à "Terminer", on vide le sous-état, et on envoie les DATES
+        await syncWithQhare(updatedClient, 'Terminer', 'null', {
+          date_fin: today,
+          date_pose: datePose
+        });
       }
 
     } catch (error) {
@@ -144,7 +153,12 @@ const Index = () => {
     return match ? match[1] : null;
   };
 
-  const syncWithQhare = async (client: Client, etat: string | undefined, sous_etat: string | undefined) => {
+  const syncWithQhare = async (
+    client: Client,
+    etat: string | undefined,
+    sous_etat: string | undefined,
+    dates?: { date_pose?: string, date_fin?: string }
+  ) => {
     const qhareId = getQhareId(client);
 
     if (!qhareId) {
@@ -161,10 +175,17 @@ const Index = () => {
 
     try {
       // On appelle notre propre API route qui fait proxy vers Qhare
+      const payload = {
+        qhareId,
+        etat,
+        sous_etat,
+        ...dates
+      };
+
       const response = await fetch('/api/update-qhare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qhareId, etat, sous_etat })
+        body: JSON.stringify(payload)
       });
       const result = await response.json();
 
@@ -218,8 +239,10 @@ const Index = () => {
       await clientService.addAppointment(selectedClient.id, newRdv);
       toast.success("Rendez-vous planifié");
 
-      // SYNC QHARE: Sous-état -> Planifier (comme dans la liste déroulante)
-      await syncWithQhare(selectedClient, undefined, 'Planifier');
+      // SYNC QHARE: Sous-état -> Planifier + DATE POSE
+      await syncWithQhare(selectedClient, undefined, 'Planifier', {
+        date_pose: rdvData.date // Format YYYY-MM-DD attendu
+      });
 
     } catch (error) {
       console.error(error);
@@ -252,8 +275,14 @@ const Index = () => {
       await clientService.updateClient(selectedClient.id, { status: 'en_cours' });
       toast.success("Jour J simulé : Client passé 'En cours'");
 
+      // Retrouver la date de pose
+      const installRdv = updatedClient.rdvs.find(r => r.type === 'installation');
+      const datePose = installRdv ? installRdv.date : undefined;
+
       // 3. Sync Qhare -> Installation en cours (Terme plus précis que "En cours")
-      await syncWithQhare(updatedClient, undefined, "Installation en cours");
+      await syncWithQhare(updatedClient, undefined, "Installation en cours", {
+        date_pose: datePose
+      });
 
     } catch (e) {
       console.error(e);

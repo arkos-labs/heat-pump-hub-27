@@ -9,14 +9,14 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    const { qhareId, etat, sous_etat } = req.body;
+    const { qhareId, etat, sous_etat, date_pose, date_fin } = req.body;
     const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
 
     if (!qhareId) {
         return res.status(400).json({ error: 'Missing qhareId' });
     }
 
-    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${etat}, Sous-état: ${sous_etat}`);
+    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${etat}, Sous-état: ${sous_etat}, Date Pose: ${date_pose}, Date Fin: ${date_fin}`);
 
     try {
         // FORCE URL Parameters: This is the most reliable way for this type of API
@@ -24,9 +24,14 @@ export default async function handler(req, res) {
         params.append('access_token', ACCESS_TOKEN);
         params.append('id', qhareId);
         if (etat) params.append('etat', etat);
+
         // Note: The doc says "sous_etat", ensure strictly this spelling.
         // Check for undefined so we can pass empty string "" to clear the field.
         if (sous_etat !== undefined) params.append('sous_etat', sous_etat);
+
+        // Dates
+        if (date_pose) params.append('date_pose', date_pose);
+        if (date_fin) params.append('date_fin', date_fin);
 
         // FIX: Qhare seems to require 'raison_sociale' even if not B2B, or defaults to B2B logic.
         // We explicitly say it's NOT B2B and provide a dummy "Particulier" just in case.

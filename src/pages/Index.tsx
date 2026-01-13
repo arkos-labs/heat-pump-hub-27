@@ -132,8 +132,8 @@ const Index = () => {
   // Fonction utilitaire pour extraire l'ID Qhare des notes
   const getQhareId = (client: Client): string | null => {
     if (!client.notes) return null;
-    // Cherche "ID Qhare: [id]" ou "ID Qhare:[id]" (plus souple)
-    const match = client.notes.match(/ID Qhare:\s*([^\s]+)/i);
+    // Cherche le premier groupe de chiffres après "ID Qhare:" (ignore les répétitions de texte)
+    const match = client.notes.match(/ID Qhare:.*?(\d+)/i);
     return match ? match[1] : null;
   };
 

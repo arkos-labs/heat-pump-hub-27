@@ -117,6 +117,54 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient 
             </CardContent>
           </Card>
 
+          {/* Identifiant Qhare (Manuel) */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Synchronisation Qhare</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <label htmlFor="qhare-id" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    ID Qhare
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="qhare-id"
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="Ex: 1683214"
+                      defaultValue={(() => {
+                        if (!client.notes) return '';
+                        const match = client.notes.match(/ID Qhare:\s*([a-zA-Z0-9-]+)/);
+                        return match ? match[1] : '';
+                      })()}
+                      onBlur={(e) => {
+                        const newId = e.target.value;
+                        let newNotes = client.notes || '';
+
+                        // Regex pour trouver l'ID existant
+                        const regex = /ID Qhare:\s*([a-zA-Z0-9-]+)/;
+
+                        if (regex.test(newNotes)) {
+                          // On remplace l'ID existant
+                          newNotes = newNotes.replace(regex, `ID Qhare: ${newId}`);
+                        } else {
+                          // On l'ajoute (avec un saut de ligne si notes non vides)
+                          newNotes = newNotes ? `${newNotes}\nID Qhare: ${newId}` : `ID Qhare: ${newId}`;
+                        }
+
+                        onUpdateClient({ ...client, notes: newNotes });
+                      }}
+                    />
+                  </div>
+                  <p className="text-[0.8rem] text-muted-foreground">
+                    Le numéro à la fin de l'URL du client sur Qhare (ex: leads/<b>1683214</b>/edit).
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Détails du chantier */}
           <Card>
             <CardHeader className="pb-3">

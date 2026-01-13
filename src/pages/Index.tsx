@@ -138,7 +138,10 @@ const Index = () => {
 
   const syncWithQhare = async (client: Client, etat: string | undefined, sous_etat: string | undefined) => {
     const qhareId = getQhareId(client);
-    if (!qhareId) return;
+    if (!qhareId) {
+      toast.error("Synchro Qhare impossible : ID introuvable dans les notes du client.");
+      return;
+    }
 
     try {
       // On appelle notre propre API route qui fait proxy vers Qhare

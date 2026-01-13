@@ -34,8 +34,8 @@ export default async function handler(req, res) {
                 code_postal: data.code_postal || data.zipcode || null, // Attention au nom de la colonne
                 source: 'qhare',
                 status: 'nouveau', // Statut par défaut
-                // Ajout des champs techniques si nécessaire ou stockage du raw data
-                notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`
+                // DEBUG: On injecte TOUT le JSON pour trouver le bon nom du champ ID
+                notes: `DEBUG RAW: ${JSON.stringify(data)}`
             };
 
             // Insertion en base

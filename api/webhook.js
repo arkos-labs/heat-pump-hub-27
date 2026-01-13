@@ -50,12 +50,38 @@ export default async function handler(req, res) {
                 return res.status(200).json({ success: false, error: 'Erreur insertion DB', details: error.message });
             }
 
+            // --- AUTO-REPONSE QHARE: Passer en "À planifier" ---
+            if (data.id) {
+                try {
+                    const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
+                    const params = new URLSearchParams();
+                    params.append('access_token', ACCESS_TOKEN);
+                    params.append('id', data.id);
+                    params.append('sous_etat', 'À planifier'); // Orthographe exacte confirmée
+
+                    // Champs techniques pour éviter les erreurs de validation Qhare
+                    params.append('btob', '0');
+                    params.append('raison_sociale', 'Particulier');
+
+                    const updateUrl = `https://qhare.fr/api/lead/update?${params.toString()}`;
+                    console.log('Auto-Update Qhare (À planifier) ->', updateUrl.replace(ACCESS_TOKEN, 'HIDDEN'));
+
+                    // Appel non-bloquant (on n'attend pas forcément le résultat pour répondre au webhook)
+                    fetch(updateUrl).then(r => r.json()).then(resQhare => {
+                        console.log("Réponse Qhare Auto-Update:", resQhare);
+                    }).catch(err => console.error("Erreur Auto-Update Qhare:", err));
+
+                } catch (e) {
+                    console.error("Erreur configuration Auto-Update", e);
+                }
+            }
+            // ---------------------------------------------------
+
             return res.status(200).json({
                 success: true,
-                message: 'Client sauvegardé dans Supabase',
+                message: 'Client sauvegardé et accusé de réception envoyé (À planifier)',
                 client: insertedData
             });
-
         } catch (error) {
             console.error('Erreur script:', error);
             return res.status(500).json({ success: false, error: error.message });

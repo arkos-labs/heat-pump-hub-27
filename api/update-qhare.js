@@ -24,8 +24,9 @@ export default async function handler(req, res) {
         params.append('access_token', ACCESS_TOKEN);
         params.append('id', qhareId);
         if (etat) params.append('etat', etat);
-        // Note: The doc says "sous_etat", ensure strictly this spelling
-        if (sous_etat) params.append('sous_etat', sous_etat);
+        // Note: The doc says "sous_etat", ensure strictly this spelling.
+        // Check for undefined so we can pass empty string "" to clear the field.
+        if (sous_etat !== undefined) params.append('sous_etat', sous_etat);
 
         // FIX: Qhare seems to require 'raison_sociale' even if not B2B, or defaults to B2B logic.
         // We explicitly say it's NOT B2B and provide a dummy "Particulier" just in case.

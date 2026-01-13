@@ -40,7 +40,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient 
   return (
     <div className="space-y-4">
       {/* En-tête */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">
             {client.prenom} {client.nom}
@@ -50,18 +50,34 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient 
             {new Date(client.createdAt).toLocaleDateString('fr-FR')}
           </p>
         </div>
-        <Select value={client.status} onValueChange={(v) => onStatusChange(v as ClientStatus)}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(statusLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+
+        <div className="flex gap-2">
+          {client.status === 'en_cours' && (
+            <Button
+              onClick={() => {
+                if (confirm('Confirmer la fin du chantier ? Le dossier sera archivé.')) {
+                  onStatusChange('termine');
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Terminer Chantier
+            </Button>
+          )}
+
+          <Select value={client.status} onValueChange={(v) => onStatusChange(v as ClientStatus)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Tabs defaultValue="info" className="w-full">

@@ -31,7 +31,7 @@ const Index = () => {
   const [showAddRdv, setShowAddRdv] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch clients from Supabase
+  // Fetch clients from Supabase and auto-update status based on date
   useEffect(() => {
     const loadClients = async () => {
       try {
@@ -43,27 +43,42 @@ const Index = () => {
         if (error) throw error;
 
         if (data) {
-          const mappedClients: Client[] = data.map((row: any) => ({
-            id: row.id.toString(),
-            nom: row.nom || 'Inconnu',
-            prenom: row.prenom || '',
-            email: row.email || '',
-            telephone: row.telephone || '',
-            adresse: row.adresse || '',
-            ville: row.ville || '',
-            codePostal: row.code_postal || '',
-            status: (row.status as ClientStatus) || 'nouveau',
-            typeLogement: row.type_logement || 'maison',
-            surface: row.surface || 100,
-            typeChauffageActuel: row.type_chauffage_actuel || 'inconnu',
-            rdvs: row.appointments || [], // Load appointments from JSON column
-            createdAt: row.created_at,
-            technicalData: row.technical_data
-          }));
+          const today = new Date();
+          const mappedClients: Client[] = data.map((row: any) => {
+            const appointments = row.appointments || [];
+            let computedStatus = (row.status as ClientStatus) || 'nouveau';
+
+            // AUTO-STATUS: If status is 'rdv_planifie' BUT the date is TODAY, switch to 'en_cours'
+            // This is only a display logic for now.
+            const hasRdvToday = appointments.some((rdv: any) => isSameDay(new Date(rdv.date), today));
+
+            if (hasRdvToday && computedStatus === 'rdv_planifie') {
+              computedStatus = 'en_cours';
+            }
+
+            return {
+              id: row.id.toString(),
+              nom: row.nom || 'Inconnu',
+              prenom: row.prenom || '',
+              email: row.email || '',
+              telephone: row.telephone || '',
+              adresse: row.adresse || '',
+              ville: row.ville || '',
+              codePostal: row.code_postal || '',
+              status: computedStatus,
+              typeLogement: row.type_logement || 'maison',
+              surface: row.surface || 100,
+              typeChauffageActuel: row.type_chauffage_actuel || 'inconnu',
+              rdvs: appointments,
+              createdAt: row.created_at,
+              technicalData: row.technical_data
+            };
+          });
           setClients(mappedClients);
         }
       } catch (err) {
         console.error("Erreur chargement Supabase:", err);
+
         toast.error("Impossible de charger les clients");
       } finally {
         setLoading(false);

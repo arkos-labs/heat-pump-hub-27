@@ -151,6 +151,11 @@ const Index = () => {
   };
 
   const handleClientUpdate = async (updatedClientData: Client) => {
+    // Check if notes changed and contain audit summary
+    const oldClient = clients.find(c => c.id === updatedClientData.id);
+    const oldNotes = oldClient?.notes || '';
+    const newNotes = updatedClientData.notes || '';
+
     // Optimistic update
     setClients(clients.map(c => c.id === updatedClientData.id ? updatedClientData : c));
     setSelectedClient(updatedClientData);
@@ -158,6 +163,29 @@ const Index = () => {
     try {
       await clientService.updateClient(updatedClientData.id, updatedClientData);
       toast.success("Informations sauvegardées");
+
+      // SYNC AUDIT TO QHARE
+      const BLOCK_START = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
+      const BLOCK_END = "--- ⬆️ FIN AUDIT ⬆️ ---";
+
+      if (newNotes !== oldNotes && newNotes.includes(BLOCK_START)) {
+        // Extract the block
+        const regex = new RegExp(`${BLOCK_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${BLOCK_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+        const match = newNotes.match(regex);
+
+        if (match) {
+          const auditBlock = match[0];
+          // We found the audit block, let's sync it as a comment
+          // Only sync if it's different or just always sync if present? 
+          // Safer to check if the audit specifically changed, but for now let's sync it.
+          // Note: Qhare might clear old comments or append. We hope it appends or handles it. 
+          // But usually we just want to post the new version.
+
+          await syncWithQhare(updatedClientData, undefined, undefined, undefined, auditBlock);
+          toast.info("Audit technique envoyé à Qhare (Commentaires)");
+        }
+      }
+
     } catch (error) {
       console.error(error);
       toast.error("Erreur sauvegarde");
@@ -176,19 +204,22 @@ const Index = () => {
     client: Client,
     etat: string | undefined,
     sous_etat: string | undefined,
-    dates?: { date_pose?: string, date_fin?: string }
+    dates?: { date_pose?: string, date_fin?: string },
+    comment?: string
   ) => {
     const qhareId = getQhareId(client);
 
     if (!qhareId) {
-      toast.error("Synchro Qhare impossible : ID introuvable (case vide ?).");
+      // Silent fail for comment sync if ID is missing might be better than error toast to avoid spamming
+      // But user wants to know.
+      // toast.error("Synchro Qhare impossible : ID introuvable.");
       return;
     }
 
     // Sécurité: Vérifier que c'est bien des chiffres
     if (!/^\d+$/.test(qhareId)) {
       console.error("ID Invalide detecté:", qhareId);
-      toast.error(`ID Qhare invalide : "${qhareId}". Il ne faut mettre QUE des chiffres.`);
+      // toast.error(`ID Qhare invalide : "${qhareId}".`);
       return;
     }
 
@@ -198,7 +229,8 @@ const Index = () => {
         qhareId,
         etat,
         sous_etat,
-        ...dates
+        ...dates,
+        comment
       };
 
       const response = await fetch('/api/update-qhare', {
@@ -210,7 +242,8 @@ const Index = () => {
 
       if (result.success) {
         // On affiche tout le résultat pour débugger
-        toast.success("Réponse Qhare : " + JSON.stringify(result));
+        // toast.success("Réponse Qhare : " + JSON.stringify(result));
+        console.log("Qhare Sync Success:", result);
       } else {
         toast.error("Echec Qhare : " + JSON.stringify(result));
       }

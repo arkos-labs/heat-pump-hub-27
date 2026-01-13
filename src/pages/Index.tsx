@@ -162,9 +162,10 @@ const Index = () => {
       const result = await response.json();
 
       if (result.success) {
-        toast.success("Qhare OK : " + JSON.stringify(result.data));
+        // On affiche tout le résultat pour débugger
+        toast.success("Réponse Qhare : " + JSON.stringify(result));
       } else {
-        toast.error("Qhare Erreur : " + JSON.stringify(result));
+        toast.error("Echec Qhare : " + JSON.stringify(result));
       }
     } catch (e) {
       console.error("Erreur sync Qhare", e);

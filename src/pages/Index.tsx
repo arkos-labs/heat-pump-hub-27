@@ -230,6 +230,29 @@ const Index = () => {
     await syncWithQhare(client, undefined, 'Terminé');
   };
 
+  const handleSimulateJourJ = async () => {
+    if (!selectedClient) return;
+    if (!confirm("Simuler le Jour J (Démarrage chantier) ?\nCela passera le client en 'En cours' et mettra à jour Qhare.")) return;
+
+    // 1. Update local
+    const updatedClient = { ...selectedClient, status: 'en_cours' as ClientStatus };
+    setClients(clients.map(c => c.id === selectedClient.id ? updatedClient : c));
+    setSelectedClient(updatedClient);
+
+    // 2. Persist to DB
+    try {
+      await clientService.updateClient(selectedClient.id, { status: 'en_cours' });
+      toast.success("Jour J simulé : Client passé 'En cours'");
+
+      // 3. Sync Qhare -> Installation en cours
+      await syncWithQhare(updatedClient, undefined, "Installation en cours");
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur lors de la simulation");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -393,6 +416,7 @@ const Index = () => {
                   setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
                   setSelectedClient(updatedClient);
                 }}
+                onSimulateJourJ={handleSimulateJourJ}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-[400px] border-2 border-dashed rounded-lg text-muted-foreground bg-muted/30">

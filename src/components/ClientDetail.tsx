@@ -28,9 +28,10 @@ interface ClientDetailProps {
   onStatusChange: (status: ClientStatus) => void;
   onAddRdv: () => void;
   onUpdateClient: (updatedClient: Client) => void;
+  onSimulateJourJ: () => void;
 }
 
-export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient }: ClientDetailProps) {
+export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient, onSimulateJourJ }: ClientDetailProps) {
   const appointmentTypeLabels = {
     visite_technique: 'Visite technique',
     installation: 'Installation',
@@ -51,7 +52,18 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient 
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {/* Bouton de Simulation Jour J (Visible si RDV Planifié) */}
+          {client.status === 'rdv_planifie' && (
+            <Button
+              variant="secondary"
+              className="border-primary/20 bg-primary/10 text-primary hover:bg-primary/20"
+              onClick={onSimulateJourJ}
+            >
+              🚀 Simuler Jour J
+            </Button>
+          )}
+
           {client.status === 'en_cours' && (
             <Button
               onClick={() => {

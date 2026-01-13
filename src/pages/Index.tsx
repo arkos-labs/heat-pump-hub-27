@@ -138,8 +138,16 @@ const Index = () => {
 
   const syncWithQhare = async (client: Client, etat: string | undefined, sous_etat: string | undefined) => {
     const qhareId = getQhareId(client);
+
     if (!qhareId) {
-      toast.error("Synchro Qhare impossible : ID introuvable dans les notes du client.");
+      toast.error("Synchro Qhare impossible : ID introuvable (case vide ?).");
+      return;
+    }
+
+    // Sécurité: Vérifier que c'est bien des chiffres
+    if (!/^\d+$/.test(qhareId)) {
+      console.error("ID Invalide detecté:", qhareId);
+      toast.error(`ID Qhare invalide : "${qhareId}". Il ne faut mettre QUE des chiffres.`);
       return;
     }
 

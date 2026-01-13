@@ -9,14 +9,14 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    const { qhareId, etat, sous_etat, date_pose, date_fin, comment } = req.body;
+    const { qhareId, etat, sous_etat, date_pose, date_fin, comment, extras } = req.body;
     const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
 
     if (!qhareId) {
         return res.status(400).json({ error: 'Missing qhareId' });
     }
 
-    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${etat}, Sous-état: ${sous_etat}, Date Pose: ${date_pose}, Date Fin: ${date_fin}, Commentaire: ${comment ? 'Présent' : 'Non'}`);
+    console.log(`Updating Qhare Lead ${qhareId} -> Etat: ${etat}, Sous-état: ${sous_etat}, Date Pose: ${date_pose}, Date Fin: ${date_fin}, Commentaire: ${comment ? 'Présent' : 'Non'}, Extras: ${JSON.stringify(extras)}`);
 
     try {
         // FORCE URL Parameters: This is the most reliable way for this type of API
@@ -35,6 +35,15 @@ export default async function handler(req, res) {
 
         // Comments
         if (comment) params.append('commentaire', comment);
+
+        // Extra fields (dynamic mapping)
+        if (extras && typeof extras === 'object') {
+            Object.entries(extras).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    params.append(key, value);
+                }
+            });
+        }
 
         // FIX: Qhare seems to require 'raison_sociale' even if not B2B, or defaults to B2B logic.
         // We explicitly say it's NOT B2B and provide a dummy "Particulier" just in case.

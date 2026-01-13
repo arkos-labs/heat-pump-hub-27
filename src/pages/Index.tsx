@@ -225,13 +225,25 @@ const Index = () => {
     }
 
     try {
+      // Extraction des champs à mapper vers Qhare
+      const extras = {
+        surface_habitable: client.surface ? client.surface.toString() : '',
+        type_logement: client.typeLogement, // "maison" ou "appartement"
+        type_chauffage: client.typeChauffageActuel,
+        // Mapping plus spécifique pour la toiture qui vient de technicalData
+        type_toiture: client.technicalData?.elec?.typeCouverture || '',
+        // Autres champs potentiels si disponibles
+        // proprietaire: ...
+      };
+
       // On appelle notre propre API route qui fait proxy vers Qhare
       const payload = {
         qhareId,
         etat,
         sous_etat,
         ...dates,
-        comment
+        comment,
+        extras
       };
 
       const response = await fetch('/api/update-qhare', {

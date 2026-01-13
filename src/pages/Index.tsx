@@ -71,7 +71,8 @@ const Index = () => {
               typeChauffageActuel: row.type_chauffage_actuel || 'inconnu',
               rdvs: appointments,
               createdAt: row.created_at,
-              technicalData: row.technical_data
+              technicalData: row.technical_data,
+              notes: row.notes
             };
           });
           setClients(mappedClients);

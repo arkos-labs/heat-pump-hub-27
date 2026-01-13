@@ -28,7 +28,8 @@ export const clientService = {
         delete dbUpdates.codePostal;
         delete dbUpdates.typeLogement;
         delete dbUpdates.typeChauffageActuel;
-        delete dbUpdates.puissanceEstimee; // Assuming this column exists as snake_case
+        delete dbUpdates.puissanceEstimee;
+        delete dbUpdates.technicalData; // Erreur corrigée : Il faut supprimer le champ camelCase pour ne pas qu'il soit envoyé à la DB
 
         const { data, error } = await supabase
             .from('clients')

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Client, ClientStatus, Appointment } from '@/types/client';
 import { supabase } from '@/lib/supabaseClient';
+import { clientService } from '@/services/clientService';
 import { ClientCard } from '@/components/ClientCard';
 import { ClientDetail } from '@/components/ClientDetail';
 
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { statusLabels } from '@/types/client';
 import { Search } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [clients, setClients] = useState<Client[]>([]); // Initialize with empty array
@@ -50,16 +52,18 @@ const Index = () => {
             ville: row.ville || '',
             codePostal: row.code_postal || '',
             status: (row.status as ClientStatus) || 'nouveau',
-            typeLogement: 'maison',
-            surface: 100,
-            typeChauffageActuel: 'inconnu',
-            rdvs: [],
-            createdAt: row.created_at
+            typeLogement: row.type_logement || 'maison',
+            surface: row.surface || 100,
+            typeChauffageActuel: row.type_chauffage_actuel || 'inconnu',
+            rdvs: row.appointments || [], // Load appointments from JSON column
+            createdAt: row.created_at,
+            technicalData: row.technical_data
           }));
           setClients(mappedClients);
         }
       } catch (err) {
         console.error("Erreur chargement Supabase:", err);
+        toast.error("Impossible de charger les clients");
       } finally {
         setLoading(false);
       }
@@ -77,7 +81,7 @@ const Index = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleStatusChange = (status: ClientStatus) => {
+  const handleStatusChange = async (status: ClientStatus) => {
     if (!selectedClient) return;
 
     // Optimistic update
@@ -85,28 +89,56 @@ const Index = () => {
     setClients(clients.map(c => c.id === selectedClient.id ? updatedClient : c));
     setSelectedClient(updatedClient);
 
-    // TODO: Persist status change to Supabase
-    // updateClientInDb(selectedClient.id, { status });
+    try {
+      await clientService.updateClient(selectedClient.id, { status });
+      toast.success("Statut mis à jour");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors de la mise à jour du statut");
+      // Revert (idealement)
+    }
   };
 
+  const handleClientUpdate = async (updatedClientData: Client) => {
+    // Optimistic update
+    setClients(clients.map(c => c.id === updatedClientData.id ? updatedClientData : c));
+    setSelectedClient(updatedClientData);
 
+    try {
+      await clientService.updateClient(updatedClientData.id, updatedClientData);
+      toast.success("Informations sauvegardées");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur sauvegarde");
+    }
+  }
 
-  const handleAddRdv = (rdvData: Omit<Appointment, 'id'>) => {
+  const handleAddRdv = async (rdvData: Omit<Appointment, 'id'>) => {
     if (!selectedClient) return;
     const newRdv: Appointment = {
       ...rdvData,
       id: Date.now().toString(),
     };
+
     const updatedClient = {
       ...selectedClient,
       rdvs: [...selectedClient.rdvs, newRdv],
       status: 'rdv_planifie' as ClientStatus,
     };
-    const updatedClients = clients.map((c) =>
+
+    // Optimistic
+    setClients(clients.map((c) =>
       c.id === selectedClient.id ? updatedClient : c
-    );
-    setClients(updatedClients);
+    ));
     setSelectedClient(updatedClient);
+
+    try {
+      await clientService.addAppointment(selectedClient.id, newRdv);
+      toast.success("Rendez-vous planifié");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors de la planification");
+    }
   };
 
   return (

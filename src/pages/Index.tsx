@@ -187,9 +187,9 @@ const Index = () => {
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error("Erreur sauvegarde");
+      toast.error(`Erreur sauvegarde: ${error.message || error.details || 'Inconnue'}`);
     }
   }
 

@@ -513,10 +513,7 @@ const Index = () => {
                 client={selectedClient}
                 onStatusChange={handleStatusChange}
                 onAddRdv={() => setShowAddRdv(true)}
-                onUpdateClient={(updatedClient: Client) => {
-                  setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
-                  setSelectedClient(updatedClient);
-                }}
+                onUpdateClient={handleClientUpdate}
                 onSimulateJourJ={handleSimulateJourJ}
               />
             ) : (

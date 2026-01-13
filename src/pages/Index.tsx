@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Client, ClientStatus, Appointment } from '@/types/client';
-import { mockClients } from '@/data/mockClients';
+import { supabase } from '@/lib/supabaseClient';
 import { ClientCard } from '@/components/ClientCard';
 import { ClientDetail } from '@/components/ClientDetail';
 
@@ -19,12 +19,51 @@ import { statusLabels } from '@/types/client';
 import { Search } from 'lucide-react';
 
 const Index = () => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<Client[]>([]); // Initialize with empty array
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-
   const [showAddRdv, setShowAddRdv] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch clients from Supabase
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('clients')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          const mappedClients: Client[] = data.map((row: any) => ({
+            id: row.id.toString(),
+            nom: row.nom || 'Inconnu',
+            prenom: row.prenom || '',
+            email: row.email || '',
+            telephone: row.telephone || '',
+            adresse: row.adresse || '',
+            ville: row.ville || '',
+            codePostal: row.code_postal || '',
+            status: (row.status as ClientStatus) || 'nouveau',
+            typeLogement: 'maison',
+            surface: 100,
+            typeChauffageActuel: 'inconnu',
+            rdvs: [],
+            createdAt: row.created_at
+          }));
+          setClients(mappedClients);
+        }
+      } catch (err) {
+        console.error("Erreur chargement Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadClients();
+  }, []);
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
@@ -38,11 +77,14 @@ const Index = () => {
 
   const handleStatusChange = (status: ClientStatus) => {
     if (!selectedClient) return;
-    const updatedClients = clients.map((c) =>
-      c.id === selectedClient.id ? { ...c, status } : c
-    );
-    setClients(updatedClients);
-    setSelectedClient({ ...selectedClient, status });
+
+    // Optimistic update
+    const updatedClient = { ...selectedClient, status };
+    setClients(clients.map(c => c.id === selectedClient.id ? updatedClient : c));
+    setSelectedClient(updatedClient);
+
+    // TODO: Persist status change to Supabase
+    // updateClientInDb(selectedClient.id, { status });
   };
 
 

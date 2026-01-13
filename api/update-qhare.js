@@ -27,6 +27,11 @@ export default async function handler(req, res) {
         // Note: The doc says "sous_etat", ensure strictly this spelling
         if (sous_etat) params.append('sous_etat', sous_etat);
 
+        // FIX: Qhare seems to require 'raison_sociale' even if not B2B, or defaults to B2B logic.
+        // We explicitly say it's NOT B2B and provide a dummy "Particulier" just in case.
+        params.append('btob', '0');
+        params.append('raison_sociale', 'Particulier');
+
         const targetUrl = `https://qhare.fr/api/lead/update?${params.toString()}`;
         console.log('Calling Qhare URL:', targetUrl.replace(ACCESS_TOKEN, 'HIDDEN'));
 

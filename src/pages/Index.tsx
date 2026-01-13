@@ -210,8 +210,8 @@ const Index = () => {
       await clientService.addAppointment(selectedClient.id, newRdv);
       toast.success("Rendez-vous planifié");
 
-      // SYNC QHARE: Sous-état -> Planifié
-      await syncWithQhare(selectedClient, undefined, 'Planifié');
+      // SYNC QHARE: Sous-état -> Planifier (comme dans la liste déroulante)
+      await syncWithQhare(selectedClient, undefined, 'Planifier');
 
     } catch (error) {
       console.error(error);

@@ -7,6 +7,8 @@ import { ClientDetail } from '@/components/ClientDetail';
 import { AddRdvDialog } from '@/components/AddRdvDialog';
 import { DashboardStats } from '@/components/DashboardStats';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -156,46 +158,126 @@ const Index = () => {
           </Select>
         </div>
 
-        {/* Contenu principal */}
+        {/* Contenu principal avec Onglets */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Liste des clients */}
-          <div className="space-y-3">
-            <h2 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide">
-              Clients ({filteredClients.length})
-            </h2>
-            {filteredClients.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>Aucun client trouvé</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredClients.map((client) => (
-                  <ClientCard
-                    key={client.id}
-                    client={client}
-                    onClick={() => setSelectedClient(client)}
-                    isSelected={selectedClient?.id === client.id}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <Tabs defaultValue="a_traiter" className="w-full lg:col-span-1">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="a_traiter">À traiter</TabsTrigger>
+              <TabsTrigger value="en_cours">En cours</TabsTrigger>
+              <TabsTrigger value="termines">Terminés</TabsTrigger>
+            </TabsList>
 
-          {/* Détail client */}
+            {/* Onglet À Traiter */}
+            <TabsContent value="a_traiter" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Nouveaux & Non planifiés
+                </h2>
+                <Badge variant="secondary">{clients.filter(c => ['nouveau', 'contacte'].includes(c.status)).length}</Badge>
+              </div>
+
+              <div className="space-y-3">
+                {filteredClients
+                  .filter(c => ['nouveau', 'contacte'].includes(c.status))
+                  .length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                    <p>Aucun client à traiter</p>
+                  </div>
+                ) : (
+                  filteredClients
+                    .filter(c => ['nouveau', 'contacte'].includes(c.status))
+                    .map((client) => (
+                      <ClientCard
+                        key={client.id}
+                        client={client}
+                        onClick={() => setSelectedClient(client)}
+                        isSelected={selectedClient?.id === client.id}
+                      />
+                    ))
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Onglet En Cours */}
+            <TabsContent value="en_cours" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Planifiés & En installation
+                </h2>
+                <Badge variant="secondary">{clients.filter(c => ['rdv_planifie', 'en_cours'].includes(c.status)).length}</Badge>
+              </div>
+
+              <div className="space-y-3">
+                {filteredClients
+                  .filter(c => ['rdv_planifie', 'en_cours'].includes(c.status))
+                  .length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                    <p>Aucun client en cours</p>
+                  </div>
+                ) : (
+                  filteredClients
+                    .filter(c => ['rdv_planifie', 'en_cours'].includes(c.status))
+                    .map((client) => (
+                      <ClientCard
+                        key={client.id}
+                        client={client}
+                        onClick={() => setSelectedClient(client)}
+                        isSelected={selectedClient?.id === client.id}
+                      />
+                    ))
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Onglet Terminés */}
+            <TabsContent value="termines" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Dossiers clôturés
+                </h2>
+                <Badge variant="secondary">{clients.filter(c => c.status === 'termine').length}</Badge>
+              </div>
+
+              <div className="space-y-3">
+                {filteredClients
+                  .filter(c => c.status === 'termine')
+                  .length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                    <p>Aucun client terminé</p>
+                  </div>
+                ) : (
+                  filteredClients
+                    .filter(c => c.status === 'termine')
+                    .map((client) => (
+                      <ClientCard
+                        key={client.id}
+                        client={client}
+                        onClick={() => setSelectedClient(client)}
+                        isSelected={selectedClient?.id === client.id}
+                      />
+                    ))
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Détail client (Colonne de droite permanente) */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             {selectedClient ? (
               <ClientDetail
                 client={selectedClient}
                 onStatusChange={handleStatusChange}
                 onAddRdv={() => setShowAddRdv(true)}
-                onUpdateClient={(updatedClient) => {
+                onUpdateClient={(updatedClient: Client) => {
                   setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
                   setSelectedClient(updatedClient);
                 }}
               />
             ) : (
-              <div className="flex items-center justify-center h-[400px] border-2 border-dashed rounded-lg text-muted-foreground">
-                <p>Sélectionnez un client pour voir les détails</p>
+              <div className="flex flex-col items-center justify-center h-[400px] border-2 border-dashed rounded-lg text-muted-foreground bg-muted/30">
+                <Search className="h-12 w-12 mb-4 opacity-20" />
+                <p className="font-medium">Sélectionnez un client</p>
+                <p className="text-sm">Cliquez sur un client à gauche pour voir les détails</p>
               </div>
             )}
           </div>

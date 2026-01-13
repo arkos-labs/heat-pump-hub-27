@@ -123,13 +123,23 @@ const Index = () => {
 
         const datePose = installRdv ? installRdv.date : undefined;
 
+        // Formatage français des dates (JJ/MM/AAAA)
+        const [ty, tm, td] = today.split('-');
+        const todayFr = `${td}/${tm}/${ty}`;
+
+        let datePoseFr = undefined;
+        if (datePose) {
+          const [y, m, d] = datePose.split('-');
+          datePoseFr = `${d}/${m}/${y}`;
+        }
+
         // Message de DEBUG pour l'utilisateur
-        toast.info(`Synchro Dates : Début=${datePose || 'Aucune'} / Fin=${today}`);
+        toast.info(`Synchro Dates : Début=${datePoseFr || 'Aucune'} / Fin=${todayFr}`);
 
         // On passe l'ÉTAT principal à "Terminer", on vide le sous-état, et on envoie les DATES
         await syncWithQhare(updatedClient, 'Terminer', 'null', {
-          date_fin: today,
-          date_pose: datePose
+          date_fin: todayFr,
+          date_pose: datePoseFr
         });
       }
 
@@ -248,9 +258,12 @@ const Index = () => {
       await clientService.addAppointment(selectedClient.id, newRdv);
       toast.success("Rendez-vous planifié");
 
-      // SYNC QHARE: Sous-état -> Planifier + DATE POSE
+      // SYNC QHARE: Sous-état -> Planifier + DATE POSE (Format JJ/MM/AAAA pour être sûr)
+      const [y, m, d] = rdvData.date.split('-');
+      const formattedDate = `${d}/${m}/${y}`;
+
       await syncWithQhare(selectedClient, undefined, 'Planifier', {
-        date_pose: rdvData.date // Format YYYY-MM-DD attendu
+        date_pose: formattedDate
       });
 
     } catch (error) {
@@ -291,9 +304,15 @@ const Index = () => {
 
       const datePose = installRdv ? installRdv.date : undefined;
 
+      let datePoseFr = undefined;
+      if (datePose) {
+        const [y, m, d] = datePose.split('-');
+        datePoseFr = `${d}/${m}/${y}`;
+      }
+
       // 3. Sync Qhare -> Installation en cours (Terme plus précis que "En cours")
       await syncWithQhare(updatedClient, undefined, "Installation en cours", {
-        date_pose: datePose
+        date_pose: datePoseFr
       });
 
     } catch (e) {

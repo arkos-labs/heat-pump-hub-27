@@ -10,21 +10,25 @@ export const clientService = {
 
         const dbUpdates: any = { ...otherFields };
 
-        // Mapping des champs front vers DB si nécessaire (ex: codePostal -> code_postal)
+        // Mapping des champs front vers DB
         if (updates.codePostal) dbUpdates.code_postal = updates.codePostal;
         if (updates.typeLogement) dbUpdates.type_logement = updates.typeLogement;
         if (updates.typeChauffageActuel) dbUpdates.type_chauffage_actuel = updates.typeChauffageActuel;
+        if (updates.puissanceEstimee) dbUpdates.puissance_estimee = updates.puissanceEstimee;
 
         // Si on a des données techniques, on les met à jour
         if (technicalData) {
             dbUpdates.technical_data = technicalData;
         }
 
-        // Nettoyage des champs undefined ou qui n'existent pas en base
+        // Nettoyage des champs qui n'existent pas en base (camelCase vs snake_case)
         delete dbUpdates.id;
         delete dbUpdates.createdAt;
-        delete dbUpdates.rdvs; // Les RDVs sont gérés à part ou dans une autre table idéalement, mais ici on va voir comment vous voulez les stocker. 
-        // Pour l'instant, si on n'a pas de table RDV séparée, on peut les stocker dans un champ JSON ou les ignorer ici si on ne modifie que le client.
+        delete dbUpdates.rdvs;
+        delete dbUpdates.codePostal;
+        delete dbUpdates.typeLogement;
+        delete dbUpdates.typeChauffageActuel;
+        delete dbUpdates.puissanceEstimee; // Assuming this column exists as snake_case
 
         const { data, error } = await supabase
             .from('clients')
@@ -33,7 +37,10 @@ export const clientService = {
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase Update Error:", error);
+            throw error;
+        }
         return data;
     },
 

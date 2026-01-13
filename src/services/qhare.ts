@@ -1,7 +1,7 @@
 
 import { Client, ClientStatus } from "@/types/client";
 
-const API_KEY = "tMebdKJBpI_ozc3XHoi-MMpgxG4QZOJXUWTCByekScI";
+const API_KEY = "8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg";
 // Note: This URL is a placeholder based on standard conventions. 
 // It may need to be updated if QHare uses a different endpoint structure.
 const BASE_URL = "https://qhare.fr/api";

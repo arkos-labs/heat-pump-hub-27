@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isSameDay } from 'date-fns';
 import { Client, ClientStatus, Appointment } from '@/types/client';
 import { supabase } from '@/lib/supabaseClient';
 import { clientService } from '@/services/clientService';
@@ -115,6 +116,23 @@ const Index = () => {
 
   const handleAddRdv = async (rdvData: Omit<Appointment, 'id'>) => {
     if (!selectedClient) return;
+
+    // 1. Vérification de conflit de date
+    const newRdvDate = new Date(rdvData.date);
+
+    // On cherche si un AUTRE client a déjà un RDV ce jour-là
+    const conflictingClient = clients.find(c =>
+      c.rdvs.some(r => isSameDay(new Date(r.date), newRdvDate))
+    );
+
+    if (conflictingClient) {
+      toast.error(`Impossible : ${conflictingClient.prenom} ${conflictingClient.nom} est déjà planifié ce jour-là !`, {
+        description: "Un seul chantier/RDV par jour autorisé.",
+        duration: 5000,
+      });
+      return; // On arrête tout, pas de sauvegarde
+    }
+
     const newRdv: Appointment = {
       ...rdvData,
       id: Date.now().toString(),

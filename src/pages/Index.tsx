@@ -111,7 +111,8 @@ const Index = () => {
 
       // SYNC QHARE: Si le statut passe à "Terminé", on prévient Qhare
       if (status === 'termine') {
-        await syncWithQhare(updatedClient, undefined, 'Terminé');
+        // Orthographe exacte: "Terminer"
+        await syncWithQhare(updatedClient, undefined, 'Terminer');
       }
 
     } catch (error) {
@@ -233,8 +234,8 @@ const Index = () => {
     // Update local & DB
     await handleStatusChange('termine');
 
-    // SYNC QHARE: Sous-état -> Terminé (ou validé ?)
-    await syncWithQhare(client, undefined, 'Terminé');
+    // SYNC QHARE: Sous-état -> Terminer
+    await syncWithQhare(client, undefined, 'Terminer');
   };
 
   const handleSimulateJourJ = async () => {
@@ -251,8 +252,8 @@ const Index = () => {
       await clientService.updateClient(selectedClient.id, { status: 'en_cours' });
       toast.success("Jour J simulé : Client passé 'En cours'");
 
-      // 3. Sync Qhare -> Installation en cours
-      await syncWithQhare(updatedClient, undefined, "Installation en cours");
+      // 3. Sync Qhare -> En cours (Orthographe exacte de la liste)
+      await syncWithQhare(updatedClient, undefined, "En cours");
 
     } catch (e) {
       console.error(e);

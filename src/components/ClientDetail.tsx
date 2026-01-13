@@ -290,7 +290,67 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
         <TabsContent value="technical" className="mt-4">
           <TechnicalAuditForm
             client={client}
-            onSave={(technicalData) => onUpdateClient({ ...client, technicalData })}
+            onSave={(technicalData) => {
+              const formatValue = (val: any, suffix = '') => val ? `${val}${suffix}` : 'Non renseigné';
+              const formatBool = (val: boolean) => val ? 'Oui' : 'Non';
+              const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+              const summary = `
+📋 DÉTAILS AUDIT TECHNIQUE
+===========================
+
+1️⃣ LIAISON ET UNITÉ INTÉRIEURE (PAC)
+--------------------------------------
+• Distance de liaison : ${formatValue(technicalData.liaison.distance, 'm')}
+• Hauteur sous plafond : ${formatValue(technicalData.liaison.hauteurSousPlafond, 'm')}
+• Largeur de porte : ${formatValue(technicalData.liaison.largeurPorte, 'cm')}
+• Type d'escalier : ${technicalData.liaison.typeEscalier}
+
+2️⃣ GROUPE EXTÉRIEUR
+----------------------
+• Type de support : ${technicalData.groupeExterieur.typeSupport}
+
+3️⃣ BALLONS (SOLAIRE / ÉLECTRIQUE)
+----------------------------------
+• Type de ballon : ${technicalData.ballons.type}
+• Dist. Capteur - Ballon : ${formatValue(technicalData.ballons.distanceCapteurBallon, 'm')}
+• Dist. PAC - Ballon : ${formatValue(technicalData.ballons.distancePacBallon, 'm')}
+• Hauteur plafond requise : ${formatValue(technicalData.ballons.hauteurPlafondRequis, 'm')}
+
+4️⃣ ÉLECTRICITÉ & TOITURE
+---------------------------
+• Alimentation : ${technicalData.elec.alimentation}
+• Couverture toiture : ${formatValue(technicalData.elec.typeCouverture)}
+
+5️⃣ AUDIT VIDÉO
+-----------------
+• Vidéo Tableau Élec : ${formatBool(technicalData.audit.videoTableauElectrique)}
+• Vidéo Chaudière : ${formatBool(technicalData.audit.videoChaudiere)}
+`;
+
+              let newNotes = client.notes || '';
+              const startMarker = "📋 DÉTAILS AUDIT TECHNIQUE";
+              const endMarker = "==========================="; // Just using the start as identifier is safer usually, but let's try to find the block.
+
+              // Simple replacement strategy: if we find the header, we assume the block goes until the next double newline or potentially the end. 
+              // To be safer and cleaner, let's wrap it in distinct markers.
+
+              const BLOCK_START = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
+              const BLOCK_END = "--- ⬆️ FIN AUDIT ⬆️ ---";
+
+              const formattedBlock = `${BLOCK_START}\n${summary}\n${BLOCK_END}`;
+
+              if (newNotes.includes(BLOCK_START) && newNotes.includes(BLOCK_END)) {
+                // Regex to replace everything between markers
+                const regex = new RegExp(`${escapeRegExp(BLOCK_START)}[\\s\\S]*?${escapeRegExp(BLOCK_END)}`);
+                newNotes = newNotes.replace(regex, formattedBlock);
+              } else {
+                // Append explicitly
+                newNotes = newNotes ? `${newNotes}\n\n${formattedBlock}` : formattedBlock;
+              }
+
+              onUpdateClient({ ...client, technicalData, notes: newNotes });
+            }}
           />
         </TabsContent>
       </Tabs>

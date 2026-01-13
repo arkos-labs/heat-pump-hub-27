@@ -5,35 +5,36 @@ import { Client, Appointment } from '@/types/client';
 export const clientService = {
     // Mettre à jour les infos client (Audit technique, Statut, etc.)
     async updateClient(clientId: string, updates: Partial<Client>) {
-        // On sépare les données techniques du reste car elles sont dans une colonne JSONB 'technical_data'
-        const { technicalData, ...otherFields } = updates;
+        // Liste blanche des colonnes autorisées pour éviter les erreurs "Column not found"
+        // On construit un objet propre uniquement avec ce qui existe en base
+        const payload: any = {};
 
-        const dbUpdates: any = { ...otherFields };
+        // Champs directs (snake_case en DB = camelCase en JS si identique, sinon mapping)
+        if (updates.nom !== undefined) payload.nom = updates.nom;
+        if (updates.prenom !== undefined) payload.prenom = updates.prenom;
+        if (updates.email !== undefined) payload.email = updates.email;
+        if (updates.telephone !== undefined) payload.telephone = updates.telephone;
+        if (updates.adresse !== undefined) payload.adresse = updates.adresse;
+        if (updates.ville !== undefined) payload.ville = updates.ville;
+        if (updates.surface !== undefined) payload.surface = updates.surface;
+        if (updates.status !== undefined) payload.status = updates.status;
+        if (updates.notes !== undefined) payload.notes = updates.notes;
 
-        // Mapping des champs front vers DB
-        if (updates.codePostal) dbUpdates.code_postal = updates.codePostal;
-        if (updates.typeLogement) dbUpdates.type_logement = updates.typeLogement;
-        if (updates.typeChauffageActuel) dbUpdates.type_chauffage_actuel = updates.typeChauffageActuel;
-        if (updates.puissanceEstimee) dbUpdates.puissance_estimee = updates.puissanceEstimee;
+        // Champs avec mapping (camelCase -> snake_case)
+        if (updates.codePostal !== undefined) payload.code_postal = updates.codePostal;
+        if (updates.typeLogement !== undefined) payload.type_logement = updates.typeLogement;
+        if (updates.typeChauffageActuel !== undefined) payload.type_chauffage_actuel = updates.typeChauffageActuel;
 
-        // Si on a des données techniques, on les met à jour
-        if (technicalData) {
-            dbUpdates.technical_data = technicalData;
+        // Champ technical_data
+        if (updates.technicalData !== undefined) {
+            payload.technical_data = updates.technicalData;
         }
 
-        // Nettoyage des champs qui n'existent pas en base (camelCase vs snake_case)
-        delete dbUpdates.id;
-        delete dbUpdates.createdAt;
-        delete dbUpdates.rdvs;
-        delete dbUpdates.codePostal;
-        delete dbUpdates.typeLogement;
-        delete dbUpdates.typeChauffageActuel;
-        delete dbUpdates.puissanceEstimee;
-        delete dbUpdates.technicalData; // Erreur corrigée : Il faut supprimer le champ camelCase pour ne pas qu'il soit envoyé à la DB
+        // On ignore délibérément : id, createdAt, rdvs (géré via appointments), puissanceEstimee (pas de colonne)
 
         const { data, error } = await supabase
             .from('clients')
-            .update(dbUpdates)
+            .update(payload)
             .eq('id', clientId)
             .select()
             .single();

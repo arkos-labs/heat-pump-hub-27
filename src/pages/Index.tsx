@@ -113,9 +113,18 @@ const Index = () => {
       if (status === 'termine') {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        // Retrouver la date du RDV d'installation (s'il y en a un)
-        const installRdv = updatedClient.rdvs.find(r => r.type === 'installation' || r.type === 'visite_technique');
+        // Stratégie plus robuste pour trouver la date de pose :
+        // 1. Chercher "installation"
+        // 2. Sinon "visite_technique"
+        // 3. Sinon le premier RDV de la liste (n'importe lequel)
+        let installRdv = updatedClient.rdvs.find(r => r.type === 'installation');
+        if (!installRdv) installRdv = updatedClient.rdvs.find(r => r.type === 'visite_technique');
+        if (!installRdv && updatedClient.rdvs.length > 0) installRdv = updatedClient.rdvs[0];
+
         const datePose = installRdv ? installRdv.date : undefined;
+
+        // Message de DEBUG pour l'utilisateur
+        toast.info(`Synchro Dates : Début=${datePose || 'Aucune'} / Fin=${today}`);
 
         // On passe l'ÉTAT principal à "Terminer", on vide le sous-état, et on envoie les DATES
         await syncWithQhare(updatedClient, 'Terminer', 'null', {
@@ -275,8 +284,11 @@ const Index = () => {
       await clientService.updateClient(selectedClient.id, { status: 'en_cours' });
       toast.success("Jour J simulé : Client passé 'En cours'");
 
-      // Retrouver la date de pose
-      const installRdv = updatedClient.rdvs.find(r => r.type === 'installation');
+      // Retrouver la date de pose (stratégie robuste)
+      let installRdv = updatedClient.rdvs.find(r => r.type === 'installation');
+      if (!installRdv) installRdv = updatedClient.rdvs.find(r => r.type === 'visite_technique');
+      if (!installRdv && updatedClient.rdvs.length > 0) installRdv = updatedClient.rdvs[0];
+
       const datePose = installRdv ? installRdv.date : undefined;
 
       // 3. Sync Qhare -> Installation en cours (Terme plus précis que "En cours")

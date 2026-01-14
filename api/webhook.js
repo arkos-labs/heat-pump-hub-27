@@ -55,6 +55,40 @@ export default async function handler(req, res) {
 
             let resultData;
 
+            // --- LOGIQUE RENDEZ-VOUS ---
+            // On cherche une date dans le payload qui pourrait correspondre à un RDV
+            // Champs potentiels: date_pose, date_rdv, date_installation, etc.
+            const dateRdv = data.date_pose || data.date_rdv || data.date_installation || data.date_visite;
+
+            // On récupère les RDV existants (ou tableau vide)
+            let existingAppointments = [];
+            if (existingClient && existingClient.appointments && Array.isArray(existingClient.appointments)) {
+                existingAppointments = existingClient.appointments;
+            }
+
+            let finalAppointments = [...existingAppointments];
+
+            if (dateRdv) {
+                console.log("Date de RDV détectée dans le payload Qhare:", dateRdv);
+                // On suppose le format YYYY-MM-DD ou DD-MM-YYYY.
+                // Pour simplifier, on stocke tel quel si c'est valide, sinon on tente de parser.
+                // L'app attend YYYY-MM-DD
+
+                // Vérifier si ce RDV existe déjà pour éviter les doublons (mëme date)
+                const alreadyExists = finalAppointments.some(appt => appt.date === dateRdv);
+
+                if (!alreadyExists) {
+                    finalAppointments.push({
+                        id: `qhare_${Date.now()}`, // ID unique temporaire
+                        date: dateRdv,
+                        time: "09:00", // Heure par défaut
+                        type: "installation", // Type par défaut (ou déduire si possible)
+                        status: "planifie",
+                        notes: "Synchronisé depuis Qhare"
+                    });
+                }
+            }
+
             if (existingClient) {
                 console.log("Client existant trouvé (ID Supabase:", existingClient.id, ") -> Mise à jour...");
 
@@ -82,10 +116,9 @@ export default async function handler(req, res) {
                             ? parseFloat(data.champs_perso.find(c => c.nom && c.nom.toLowerCase().includes('surface') || c.variable && c.variable.toLowerCase().includes('surface')).valeur)
                             : existingClient.surface,
                     type_chauffage_actuel: data.chauffage || existingClient.type_chauffage_actuel || 'inconnu',
-                    technical_data: newTechnicalData
+                    technical_data: newTechnicalData,
+                    appointments: finalAppointments // <--- MISE A JOUR DES RDV
                     // IMPORTANT: On NE change PAS le statut ici.
-                    // Si le client est déjà "En cours" ou "RDV Planifié", le webhook Qhare (qui envoie souvent des mises à jour mineures)
-                    // ne doit pas le faire revenir à "Nouveau".
                 };
 
                 const { data: updatedData, error: updateError } = await supabase
@@ -120,7 +153,8 @@ export default async function handler(req, res) {
                     notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`,
                     technical_data: {
                         qhare_info: qhareInfo // Stockage initial
-                    }
+                    },
+                    appointments: finalAppointments // <--- INSERTION DES RDV
                 };
 
                 const { data: insertedData, error: insertError } = await supabase

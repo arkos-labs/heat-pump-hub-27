@@ -79,7 +79,33 @@ const Index = () => {
               notes: row.notes
             };
           });
-          setClients(mappedClients);
+
+          // DEDUPLICATION FRONTEND
+          // On s'assure de n'afficher qu'une seule fois un même client (basé sur ID Qhare ou Email)
+          const uniqueClients: Client[] = [];
+          const seenIds = new Set();
+
+          mappedClients.forEach((client) => {
+            // 1. Essayer de trouver l'ID Qhare
+            let uniqueIdentifier = client.technicalData?.qhare_info?.id;
+
+            // 2. Si pas d'ID Qhare, utiliser l'email
+            if (!uniqueIdentifier && client.email) {
+              uniqueIdentifier = client.email.toLowerCase();
+            }
+
+            // 3. Fallback: ID interne (s'il n'a ni ID Qhare ni email, c'est probablement un vieux test ou un client manuel, on le garde)
+            if (!uniqueIdentifier) {
+              uniqueIdentifier = `internal_${client.id}`;
+            }
+
+            if (!seenIds.has(uniqueIdentifier)) {
+              seenIds.add(uniqueIdentifier);
+              uniqueClients.push(client);
+            }
+          });
+
+          setClients(uniqueClients);
 
           // Deep linking logic: Check if URL has client_id
           const urlClientId = searchParams.get('client_id');

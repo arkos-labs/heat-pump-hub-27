@@ -33,6 +33,7 @@ export interface Client {
       hauteurSousPlafond: number;
       largeurPorte: number; // min 65cm
       typeEscalier: 'droit' | 'L' | 'colimacon' | 'autre';
+      largeurEscalier?: number; // Nouveau
     };
     groupeExterieur: {
       typeSupport: 'dalle_beton' | 'equerres' | 'big_foot';
@@ -42,6 +43,7 @@ export interface Client {
       distancePacBallon?: number; // 1m
       type: 'solaire' | 'electrique' | 'thermodynamique';
       hauteurPlafondRequis?: number;
+      distanceEntreBallons?: number; // Nouveau
     };
     elec: {
       alimentation: 'monophase' | 'triphase';
@@ -52,6 +54,20 @@ export interface Client {
       videoChaudiere: boolean;
     };
     qhare_info?: any;
+    // Nouveaux champs pour le formulaire "Pose Client"
+    visite?: {
+      typeIsolation?: string;
+      typeRadiateurs?: string;
+      surfaceChauffee?: number;
+      temperatureSouhaitee?: number;
+      emplacementChaudiere?: string;
+      emplacementPacExterieur?: string; // Détails texte
+      distancePacIntExt?: number; // Redondant avec liaison.distance mais explicite
+      kva?: string;
+      isolationCombles?: string; // "Ventilé ? Type ?"
+      isolationPlancherBas?: string;
+      imprimante?: boolean;
+    };
   };
 }
 

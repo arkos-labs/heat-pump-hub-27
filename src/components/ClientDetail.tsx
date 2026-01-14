@@ -104,10 +104,10 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
       </div>
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="info">Informations Globales</TabsTrigger>
+          <TabsTrigger value="technical">🔧 Visite Technique</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
-          {/* <TabsTrigger value="technical">Audit Technique</TabsTrigger> - Masqué à la demande */}
         </TabsList>
 
         <TabsContent value="info" className="space-y-4 mt-4">
@@ -428,82 +428,46 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
           <ClientDocuments clientId={client.id} />
         </TabsContent>
 
-        {/* <TabsContent value="technical" className="mt-4">
+        <TabsContent value="technical" className="mt-4">
           <TechnicalAuditForm
             client={client}
             onSave={(technicalData) => {
-              const formatValue = (val: any, suffix = '') => val ? `${val}${suffix}` : 'Non renseigné';
-              const formatBool = (val: boolean) => val ? 'Oui' : 'Non';
-              const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              // On met à jour les données techniques
+              let updatedClient = {
+                ...client,
+                technicalData: technicalData
+              };
 
-              // Extraction ID Qhare pour le titre
-              const qhareIdMatch = (client.notes || '').match(/ID Qhare:\s*([a-zA-Z0-9-]+)/);
-              const qhareId = qhareIdMatch ? qhareIdMatch[1] : 'Non défini';
-
-              // Logique de présence des vidéos
-              const videosManquantes = [];
-              if (!technicalData.audit.videoTableauElectrique) videosManquantes.push("Absence de la vidéo du tableau électrique.");
-              if (!technicalData.audit.videoChaudiere) videosManquantes.push("Absence de la vidéo de la chaudière existante.");
-              const statutDocs = videosManquantes.length === 0 ? "Complet" : "Incomplet";
-
-              // Construction de la synthèse pour le format demandé
-              const videos = [];
-              if (!technicalData.audit.videoTableauElectrique) videos.push("Vidéo Tableau Manquante");
-              if (!technicalData.audit.videoChaudiere) videos.push("Vidéo Chaudière Manquante");
-              const videoStatus = videos.length > 0 ? `⚠️ ${videos.join(', ')}` : "Vidéos OK";
-
-              const observations = [
-                `Alim: ${technicalData.elec.alimentation}`,
-                `Toiture: ${technicalData.elec.typeCouverture || 'Non spécifiée'}`,
-                `Support Ext: ${technicalData.groupeExterieur.typeSupport}`,
-                `Liaison: ${technicalData.liaison.distance}m`,
-                videoStatus
-              ].join(' / ');
-
+              // Création du résumé pour les notes (Format simple)
               const todayStr = new Date().toLocaleDateString('fr-FR');
+              const visite = technicalData.visite;
 
               const summaryValues = [
-                `[AUDIT TECHNIQUE PAC - ${todayStr}]`,
-                `LOGEMENT : ${client.typeLogement === 'maison' ? 'Maison' : 'Appartement'} - ${client.surface}m²`,
-                `CHAUFFAGE : ${client.typeChauffageActuel}`,
-                `PAC PRÉCONISÉE : ${client.puissanceEstimee || '?'}kW - (Emetteurs existants)`,
-                `NOTES : ${observations}`,
-                `[FIN AUDIT]`
+                `[VISITE TECHNIQUE - ${todayStr}]`,
+                `Surface: ${visite?.surfaceChauffee || '?'}m² - T°: ${visite?.temperatureSouhaitee || '?'}°C`,
+                `Isolation: ${visite?.typeIsolation || 'Non renseigné'}`,
+                `Radiateurs: ${visite?.typeRadiateurs || '?'}`,
+                `Elec: ${technicalData.elec.alimentation} - ${visite?.kva || '?'} kVA`,
+                `[FIN VISITE]`
               ];
 
               const newFormattedBlock = summaryValues.join('\n');
-
               let newNotes = client.notes || '';
 
-              // Définition des Anciens marqueurs pour compatibilité
-              const oldBlockStart = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
-              const oldBlockEnd = "--- ⬆️ FIN AUDIT ⬆️ ---";
+              // Regex pour remplacer l'ancien bloc s'il existe
+              const blockRegex = /\[VISITE TECHNIQUE - .*?\][\s\S]*?\[FIN VISITE\]/;
 
-              // Recherche des Nouveaux marqueurs (Regex car la date change)
-              const newBlockStartRegex = /\[AUDIT TECHNIQUE PAC - .*?\]/;
-              const newBlockEnd = "[FIN AUDIT]";
-
-              // Cas 1: Remplacement d'un Ancien Bloc (Migration)
-              if (newNotes.includes(oldBlockStart) && newNotes.includes(oldBlockEnd)) {
-                const regexOld = new RegExp(`${escapeRegExp(oldBlockStart)}[\\s\\S]*?${escapeRegExp(oldBlockEnd)}`);
-                newNotes = newNotes.replace(regexOld, newFormattedBlock);
-              }
-              // Cas 2: Remplacement d'un Nouveau Bloc existant (Mise à jour)
-              else if (newBlockStartRegex.test(newNotes) && newNotes.includes(newBlockEnd)) {
-                const regexNew = /\[AUDIT TECHNIQUE PAC - .*?\][\s\S]*?\[FIN AUDIT\]/;
-                newNotes = newNotes.replace(regexNew, newFormattedBlock);
-              }
-              // Cas 3: Nouveau Bloc (Ajout)
-              else {
+              if (blockRegex.test(newNotes)) {
+                newNotes = newNotes.replace(blockRegex, newFormattedBlock);
+              } else {
                 newNotes = newNotes ? `${newNotes}\n\n${newFormattedBlock}` : newFormattedBlock;
               }
 
-              onUpdateClient({ ...client, technicalData, notes: newNotes });
-
-
+              updatedClient.notes = newNotes;
+              onUpdateClient(updatedClient);
             }}
           />
-        </TabsContent> */}
+        </TabsContent>
       </Tabs>
     </div >
   );

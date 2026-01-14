@@ -45,6 +45,7 @@ export function AddClientDialog({ open, onOpenChange, onAdd }: AddClientDialogPr
       ...formData,
       surface: parseInt(formData.surface) || 0,
       status: 'nouveau',
+      source: 'qhare', // Pour apparaître dans la liste BtoC
     });
     setFormData({
       nom: '',

@@ -196,19 +196,11 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
 
                         <div className="space-y-2">
                             <Label>Support Groupe Extérieur</Label>
-                            <Select
-                                value={formData.groupeExterieur?.typeSupport}
-                                onValueChange={(val: any) => setFormData(p => ({ ...p, groupeExterieur: { typeSupport: val } }))}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choisir support..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="dalle_beton">Dalle Béton (Recommandé)</SelectItem>
-                                    <SelectItem value="big_foot">Buffer / Big Foot (Si sol stable)</SelectItem>
-                                    <SelectItem value="equerres">Équerres Murales (Si mur solide)</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                placeholder="Dalle, Buffer, Equerres..."
+                                value={formData.groupeExterieur?.typeSupport || ''}
+                                onChange={(e) => setFormData(p => ({ ...p, groupeExterieur: { typeSupport: (e.target.value as any) } }))}
+                            />
                         </div>
 
 
@@ -227,19 +219,12 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                                 </div>
                                 <div>
                                     <Label className="text-xs">Type de Mur</Label>
-                                    <Select
-                                        value={formData.visite?.typeMur}
-                                        onValueChange={(val: any) => updateVisite('typeMur', val)}
-                                    >
-                                        <SelectTrigger className="h-9">
-                                            <SelectValue placeholder="Choisir..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="porteur">Mur Porteur (Solide)</SelectItem>
-                                            <SelectItem value="cloison">Cloison (Renfort Requis)</SelectItem>
-                                            <SelectItem value="pierre">Pierre / Brique</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Input
+                                        placeholder="Porteur, Cloison, Pierre..."
+                                        value={formData.visite?.typeMur || ''}
+                                        onChange={(e) => updateVisite('typeMur', e.target.value)}
+                                        className="h-9"
+                                    />
                                 </div>
                                 <div>
                                     <Label className="text-xs">Espace Sol (Largeur cm)</Label>
@@ -299,20 +284,12 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                                 </div>
                                 <div className="col-span-2">
                                     <Label className="text-xs">Type Escalier</Label>
-                                    <Select
-                                        value={formData.liaison?.typeEscalier}
-                                        onValueChange={(val: any) => updateLiaison('typeEscalier', val)}
-                                    >
-                                        <SelectTrigger className="h-9">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="droit">Droit (OK)</SelectItem>
-                                            <SelectItem value="L">En L (Attention virage)</SelectItem>
-                                            <SelectItem value="colimacon">Colimaçon (❌ Difficile)</SelectItem>
-                                            <SelectItem value="autre">Autre</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Input
+                                        placeholder="Droit, Colimaçon, L, Tournant..."
+                                        value={formData.liaison?.typeEscalier || ''}
+                                        onChange={(e) => updateLiaison('typeEscalier', e.target.value)}
+                                        className="h-9"
+                                    />
                                 </div>
                             </div>
                         </div>

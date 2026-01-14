@@ -22,6 +22,7 @@ import {
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TechnicalAuditForm } from './TechnicalAuditForm';
+import { ClientDocuments } from './ClientDocuments';
 
 interface ClientDetailProps {
   client: Client;
@@ -103,8 +104,9 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
       </div>
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="info">Informations Globales</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
           {/* <TabsTrigger value="technical">Audit Technique</TabsTrigger> - Masqué à la demande */}
         </TabsList>
 
@@ -420,6 +422,10 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="documents" className="mt-4">
+          <ClientDocuments clientId={client.id} />
         </TabsContent>
 
         {/* <TabsContent value="technical" className="mt-4">

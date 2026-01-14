@@ -309,6 +309,16 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
             </Card>
           )}
 
+          {/* Debug / Fallback pour tout voir si les clés ne matchent pas */}
+          <div className="pt-2 mt-2">
+            <details className="text-xs text-muted-foreground" open>
+              <summary className="cursor-pointer hover:text-primary">Voir données brutes (Debug)</summary>
+              <pre className="mt-2 p-2 bg-muted rounded overflow-auto max-h-40">
+                {JSON.stringify(client.technicalData?.qhare_info, null, 2)}
+              </pre>
+            </details>
+          </div>
+
           {/* Détails du chantier */}
           <Card>
             <CardHeader className="pb-3">

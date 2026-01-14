@@ -17,9 +17,8 @@ export function ClientCard({ client, onClick, isSelected }: ClientCardProps) {
   return (
     <Card
       onClick={onClick}
-      className={`cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? 'ring-2 ring-primary shadow-md' : ''
-      }`}
+      className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-primary shadow-md' : ''
+        }`}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
@@ -43,8 +42,8 @@ export function ClientCard({ client, onClick, isSelected }: ClientCardProps) {
           <div className="flex items-center gap-2 text-muted-foreground">
             <Home className="h-3.5 w-3.5" />
             <span>
-              {client.typeLogement === 'maison' ? 'Maison' : 'Appartement'} •{' '}
-              {client.surface} m²
+              {client.typeLogement === 'maison' ? 'Maison' : 'Appartement'}
+              {client.surface > 0 && ` • ${client.surface} m²`}
             </span>
           </div>
           {nextRdv && (

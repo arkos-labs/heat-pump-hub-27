@@ -331,14 +331,26 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Surface</p>
-                    <p className="font-medium">{client.surface} m²</p>
+                    <p className="font-medium">
+                      {(client.surface && client.surface > 0)
+                        ? `${client.surface} m²`
+                        : (client.technicalData?.qhare_info?.surface_habitable || client.technicalData?.qhare_info?.surface)
+                          ? `${client.technicalData.qhare_info.surface_habitable || client.technicalData.qhare_info.surface} m²`
+                          : "Non renseigné"
+                      }
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Thermometer className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">Chauffage actuel</p>
-                    <p className="font-medium">{client.typeChauffageActuel}</p>
+                    <p className="font-medium">
+                      {(client.typeChauffageActuel && client.typeChauffageActuel !== 'inconnu')
+                        ? client.typeChauffageActuel
+                        : (client.technicalData?.qhare_info?.chauffage || "Inconnu")
+                      }
+                    </p>
                   </div>
                 </div>
                 {client.puissanceEstimee && (

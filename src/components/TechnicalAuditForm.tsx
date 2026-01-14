@@ -199,6 +199,15 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                             />
                         </div>
 
+                        <div className="space-y-2">
+                            <Label>Emplacement PAC Extérieur</Label>
+                            <Input
+                                placeholder="Jardin, Pignon Nord, Terrasse..."
+                                value={formData.visite?.emplacementPacExterieur || ''}
+                                onChange={(e) => updateVisite('emplacementPacExterieur', e.target.value)}
+                            />
+                        </div>
+
 
 
                         {/* NOUVEAU: Détails Emplacement Intérieur */}
@@ -284,6 +293,51 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* SECTION 4: Toiture & Solaire */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>4. Toiture & Solaire (SSC / CESI)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Type de Système Solaire</Label>
+                            <Input
+                                placeholder="CESI, SSC, Photovoltaïque..."
+                                value={formData.ballons?.type || ''}
+                                onChange={(e) => updateBallons('type', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Type de Toiture</Label>
+                            <Input
+                                placeholder="Tuiles, Ardoises, Zinc..."
+                                value={formData.elec?.typeCouverture || ''}
+                                onChange={(e) => updateElec('typeCouverture', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* SECTION 5: Commentaires */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>5. Commentaires & Observations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label>Notes libres / Infos supplémentaires</Label>
+                        <textarea
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="RAS, chien méchant, clé sous le pot..."
+                            value={formData.visite?.commentaire || ''}
+                            onChange={(e) => updateVisite('commentaire', e.target.value)}
+                        />
                     </div>
                 </CardContent>
             </Card>

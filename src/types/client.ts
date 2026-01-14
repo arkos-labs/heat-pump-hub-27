@@ -41,7 +41,7 @@ export interface Client {
     ballons: {
       distanceCapteurBallon?: number | string; // max 18m
       distancePacBallon?: number | string; // 1m
-      type: 'solaire' | 'electrique' | 'thermodynamique';
+      type: string; // 'solaire' | 'electrique' | 'thermodynamique' | 'ssc' ...
       hauteurPlafondRequis?: number | string;
       distanceEntreBallons?: number | string; // Nouveau
     };
@@ -71,6 +71,7 @@ export interface Client {
       isolationCombles?: string; // "Ventilé ? Type ?"
       isolationPlancherBas?: string;
       imprimante?: boolean;
+      commentaire?: string; // Nouveau: Champ libre fin de formulaire
     };
   };
 }

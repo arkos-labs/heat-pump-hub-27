@@ -56,9 +56,26 @@ export default async function handler(req, res) {
             let resultData;
 
             // --- LOGIQUE RENDEZ-VOUS ---
-            // On cherche une date dans le payload qui pourrait correspondre à un RDV
+            // Helper pour normaliser les dates en YYYY-MM-DD
+            const normalizeDate = (d) => {
+                if (!d) return null;
+                // Si déjà format YYYY-MM-DD
+                if (/^\d{4}-\d{2}-\d{2}/.test(d)) return d.split('T')[0];
+
+                // Format FR : DD/MM/YYYY ou DD-MM-YYYY
+                const match = d.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                if (match) {
+                    const day = match[1].padStart(2, '0');
+                    const month = match[2].padStart(2, '0');
+                    const year = match[3];
+                    return `${year}-${month}-${day}`;
+                }
+                return null; // Format inconnu
+            };
+
             // Champs potentiels: date_pose, date_rdv, date_installation, etc.
-            const dateRdv = data.date_pose || data.date_rdv || data.date_installation || data.date_visite;
+            const rawDate = data.date_pose || data.date_rdv || data.date_installation || data.date_visite;
+            const dateRdv = normalizeDate(rawDate);
 
             // On récupère les RDV existants (ou tableau vide)
             let existingAppointments = [];

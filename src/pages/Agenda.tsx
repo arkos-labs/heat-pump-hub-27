@@ -135,15 +135,40 @@ export default function Agenda() {
     };
 
     // Filter appointments for selected date
+    // Helper to safely parse any date string (ISO or FR)
+    const safeParseDate = (dateStr: string | Date | undefined): Date | undefined => {
+        if (!dateStr) return undefined;
+        if (dateStr instanceof Date) return dateStr;
+
+        // Try ISO parse first
+        let parsed = parseISO(dateStr);
+        if (parsed.toString() !== 'Invalid Date') return parsed;
+
+        // Try FR format parsing (DD/MM/YYYY)
+        const match = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+        if (match) {
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10) - 1;
+            const year = parseInt(match[3], 10);
+            return new Date(year, month, day);
+        }
+        return undefined;
+    };
+
+    // Filter appointments for selected date
     const selectedDateAppointments = appointments.filter(app => {
         if (!date) return false;
-        // Handle ISO strings vs Date objects safely
-        const appDate = typeof app.date === 'string' ? parseISO(app.date) : app.date;
+        const appDate = safeParseDate(app.date);
+        if (!appDate) return false;
         return isSameDay(appDate, date);
     });
 
     // Identify days with appointments for calendar modifiers
-    const daysWithAppointments = appointments.map(a => typeof a.date === 'string' ? parseISO(a.date) : a.date);
+    const daysWithAppointments = appointments
+        .map(a => safeParseDate(a.date))
+        .filter((d): d is Date => d !== undefined);
+
+
 
     return (
         <div className="container py-8 space-y-8 max-w-7xl mx-auto">

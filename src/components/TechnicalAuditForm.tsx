@@ -212,6 +212,48 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                             </Select>
                         </div>
 
+
+
+                        {/* NOUVEAU: Détails Emplacement Intérieur */}
+                        <div className="space-y-2 md:col-span-2 border p-2 rounded bg-muted/20">
+                            <Label className="text-xs font-semibold">Emplacement & Volumes (Intérieur)</Label>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <Label className="text-xs">Lieu Prévu</Label>
+                                    <Input
+                                        placeholder="Ex: Garage, Cellier..."
+                                        value={formData.visite?.emplacementInterieur}
+                                        onChange={(e) => updateVisite('emplacementInterieur', e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-xs">Type de Mur</Label>
+                                    <Select
+                                        value={formData.visite?.typeMur}
+                                        onValueChange={(val: any) => updateVisite('typeMur', val)}
+                                    >
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Choisir..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="porteur">Mur Porteur (Solide)</SelectItem>
+                                            <SelectItem value="cloison">Cloison (Renfort Requis)</SelectItem>
+                                            <SelectItem value="pierre">Pierre / Brique</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label className="text-xs">Espace Sol (Largeur cm)</Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="Min 60cm"
+                                        value={formData.visite?.largeurDisponible}
+                                        onChange={(e) => updateVisite('largeurDisponible', Number(e.target.value))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="space-y-2 md:col-span-2">
                             <Label className="font-semibold text-primary">Contraintes Distances & Accès</Label>
                             <div className="grid grid-cols-3 gap-4">
@@ -401,6 +443,6 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                 <Save className="mr-2 h-4 w-4" />
                 Valider la Visite Technique
             </Button>
-        </div>
+        </div >
     );
 }

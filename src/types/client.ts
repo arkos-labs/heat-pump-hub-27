@@ -58,6 +58,10 @@ export interface Client {
     visite?: {
       typeIsolation?: string;
       typeRadiateurs?: string;
+      emplacementInterieur?: string; // Nouveau
+      largeurDisponible?: number; // Nouveau
+      typeMur?: string; // Nouveau
+      obstacles?: string; // Nouveau
       surfaceChauffee?: number;
       temperatureSouhaitee?: number;
       emplacementChaudiere?: string;

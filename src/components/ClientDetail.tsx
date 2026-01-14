@@ -500,28 +500,43 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
 
               // Recalcul simple pour la note
               const s = Number(visite?.surfaceChauffee) || 0;
-              let solutionEstimee = "?";
-              if (s < 80) solutionEstimee = "6-8 kW";
-              else if (s < 100) solutionEstimee = "10 kW";
-              else if (s < 120) solutionEstimee = "12 kW";
-              else if (s < 140) solutionEstimee = "14 kW";
-              else if (s <= 170) solutionEstimee = "16 kW";
-              else solutionEstimee = "> 16 kW";
+
+              // Helpers pour les Alertes
+              const check = (condition: boolean, msg: string) => condition ? `⚠️ ALERTE: ${msg}` : '';
 
               const summaryValues = [
                 `[VISITE TECHNIQUE - ${todayStr}]`,
-                `> ETUDE & SOLUTION (Bureau)`,
-                `Surface : ${s}m² | T° : ${visite?.temperatureSouhaitee || '?'}°C`,
-                `Isolation : ${visite?.typeIsolation || '?'} | Radiateurs : ${visite?.typeRadiateurs || '?'}`,
-                `SOLUTION ESTIMÉE : PAC ${solutionEstimee}`,
+                `> FICHE TECHNIQUE INSTALLATEUR`,
                 ``,
-                `> INFO CHANTIER (Installateur)`,
-                `Accès : ${liaison?.typeEscalier || '?'} (${liaison?.largeurEscalier || '?'}cm) | Portes: ${liaison?.largeurPorte}cm`,
-                `Hauteur Plafond : ${liaison?.hauteurSousPlafond || '?'}m`,
-                `Dist. Int/Ext : ${liaison?.distance || '?'}m | PAC-Ballon : ${ballons?.distancePacBallon || '?'}m`,
-                `Dist. Solaire : ${ballons?.distanceCapteurBallon || 'N/A'}m`,
-                `Support Ext : ${technicalData.groupeExterieur?.typeSupport || '?'}`,
-                `Elec : ${technicalData.elec.alimentation?.toUpperCase()} (${visite?.kva || '?'} kVA)`,
+                `1. LOGISTIQUE & ACCÈS (Le passage)`,
+                `Largeur des portes : ${liaison?.largeurPorte || '?'} cm ${check(Number(liaison?.largeurPorte) < 65, 'Trop étroit (<65cm)')}`,
+                `Type d'escalier : ${liaison?.typeEscalier || '?'} ${check(liaison?.typeEscalier === 'colimacon', 'Tourniquet bloquant pour ballon 200L')}`,
+                `Obstacles : ${visite?.obstacles || 'R.A.S'}`,
+                ``,
+                `2. EMPLACEMENT & VOLUMES (Où met-on les machines ?)`,
+                `Lieu prévu unité intérieure : ${visite?.emplacementInterieur || '?'}`,
+                `Hauteur sous plafond : ${liaison?.hauteurSousPlafond || '?'} m ${check(Number(liaison?.hauteurSousPlafond) < 2.20, 'Manque hauteur (<2.20m)')}`,
+                `Espace au sol : Largeur ${visite?.largeurDisponible || '?'} cm ${check(Number(visite?.largeurDisponible) < 60, 'Trop étroit (<60cm)')}`,
+                `Type de mur : ${visite?.typeMur || '?'}`,
+                ``,
+                `3. UNITÉ EXTÉRIEURE (Le groupe dehors)`,
+                `Emplacement : ${visite?.emplacementPacExterieur || '?'}`,
+                `Support : ${technicalData.groupeExterieur?.typeSupport || '?'} ${check(!technicalData.groupeExterieur?.typeSupport, 'Support non défini')}`,
+                `Distance Inter/Exter : ${liaison?.distance || '?'} m ${check(Number(liaison?.distance) > 10, 'Distance > 10m !')}`,
+                ``,
+                `4. SYSTÈME SOLAIRE (Le toit et le ballon)`,
+                `Type de toit : ${technicalData.elec?.typeCouverture || '?'}`,
+                `Distance Toit <-> Ballon : ${ballons?.distanceCapteurBallon || '?'} m ${check(Number(ballons?.distanceCapteurBallon) > 18, 'Distance > 18m !')}`,
+                `Ballon Solaire : ${ballons?.distanceEntreBallons || '?'} m (Dist. Ballons)`,
+                ``,
+                `5. ÉLECTRICITÉ & TECHNIQUE`,
+                `Type de courant : ${(technicalData.elec?.alimentation || '?').toUpperCase()} (${visite?.kva || '?'} kVA)`,
+                `Distance PAC <-> Ballon : ${ballons?.distancePacBallon || '?'} m ${check(Number(ballons?.distancePacBallon) > 1, 'Distance > 1m !')}`,
+                ``,
+                `6. ACTIONS REQUISES (Le client doit envoyer)`,
+                `[ ] Vidéo du trajet complet (rue -> emplacement)`,
+                `[ ] Vidéo du tableau électrique (capot ouvert)`,
+                `[ ] Vidéo de la chaudière actuelle et tuyaux`,
                 `[FIN VISITE]`
               ];
 

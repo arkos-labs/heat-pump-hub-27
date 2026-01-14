@@ -312,6 +312,61 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
             </Card>
           )}
 
+          {/* Compte Rendu Visite Technique (Nouveau) */}
+          {client.technicalData?.visite && (
+            <Card className="border-primary/50 bg-blue-50/30">
+              <CardHeader className="pb-3 border-b border-primary/10">
+                <CardTitle className="text-base font-semibold text-primary flex items-center gap-2">
+                  🔧 Synthèse Visite Technique
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+
+                {/* Partie Bureau */}
+                <div>
+                  <h5 className="text-xs font-bold text-muted-foreground uppercase mb-2">
+                    &gt; Bureau d&apos;Études
+                  </h5>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Surface : </span>
+                      <span className="font-medium">{client.technicalData.visite.surfaceChauffee || '?'} m²</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Isolation : </span>
+                      <span className="font-medium">{client.technicalData.visite.typeIsolation || '?'}</span>
+                    </div>
+                    <div className="col-span-2 bg-white p-2 rounded border border-blue-100">
+                      <span className="text-blue-600 font-bold">Solution Estimée : </span>
+                      {(() => {
+                        const s = Number(client.technicalData.visite.surfaceChauffee) || 0;
+                        if (s < 80) return "PAC 6-8 kW";
+                        if (s < 100) return "PAC 10 kW";
+                        if (s < 120) return "PAC 12 kW";
+                        if (s < 140) return "PAC 14 kW";
+                        if (s <= 170) return "PAC 16 kW";
+                        return "> 16 kW (Étude requise)";
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Partie Installateur */}
+                <div className="pt-2 border-t border-dashed border-primary/20">
+                  <h5 className="text-xs font-bold text-muted-foreground uppercase mb-2">
+                    &gt; Informations Installateur
+                  </h5>
+                  <div className="text-sm space-y-1">
+                    <p><span className="text-muted-foreground">Accès :</span> {client.technicalData.liaison?.typeEscalier || '?'}</p>
+                    <p><span className="text-muted-foreground">Distances :</span> Int/Ext: {client.technicalData.liaison?.distance || '?'}m</p>
+                    <p><span className="text-muted-foreground">Elec :</span> {(client.technicalData.elec?.alimentation || '?').toUpperCase()} ({client.technicalData.visite.kva || '?'} kVA)</p>
+                  </div>
+                </div>
+
+              </CardContent>
+            </Card>
+          )}
+
           {/* Détails du chantier */}
           <Card>
             <CardHeader className="pb-3">

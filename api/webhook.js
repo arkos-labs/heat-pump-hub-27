@@ -66,6 +66,7 @@ export default async function handler(req, res) {
                 };
 
                 // Préparer l'objet d'update
+                // On met à jour les infos de contact au cas où elles auraient changé dans Qhare
                 const clientToUpdate = {
                     nom: data.nom || data.lastname || existingClient.nom,
                     prenom: data.prenom || data.firstname || existingClient.prenom,
@@ -82,6 +83,9 @@ export default async function handler(req, res) {
                             : existingClient.surface,
                     type_chauffage_actuel: data.chauffage || existingClient.type_chauffage_actuel || 'inconnu',
                     technical_data: newTechnicalData
+                    // IMPORTANT: On NE change PAS le statut ici.
+                    // Si le client est déjà "En cours" ou "RDV Planifié", le webhook Qhare (qui envoie souvent des mises à jour mineures)
+                    // ne doit pas le faire revenir à "Nouveau".
                 };
 
                 const { data: updatedData, error: updateError } = await supabase
@@ -96,7 +100,7 @@ export default async function handler(req, res) {
             } else {
                 console.log("Nouveau Client -> Insertion...");
 
-                // Insertion en base (Nouveau client)
+                // C'est seulement ici qu'on CRÉE le client (une seule fois)
                 const clientToInsert = {
                     nom: data.nom || data.lastname || 'Inconnu',
                     prenom: data.prenom || data.firstname || '',
@@ -105,7 +109,6 @@ export default async function handler(req, res) {
                     adresse: data.adresse || data.address || null,
                     ville: data.ville || data.city || null,
                     code_postal: data.code_postal || data.zipcode || null,
-                    // Si pas de surface, chercher dans champs_perso
                     surface: (data.surface || data.surface_habitable)
                         ? parseFloat(data.surface || data.surface_habitable)
                         : (data.champs_perso && data.champs_perso.find(c => c.nom && c.nom.toLowerCase().includes('surface') || c.variable && c.variable.toLowerCase().includes('surface')))
@@ -113,7 +116,7 @@ export default async function handler(req, res) {
                             : 0,
                     type_chauffage_actuel: data.chauffage || 'inconnu',
                     source: 'qhare',
-                    status: 'nouveau',
+                    status: 'nouveau', // Statut initial à la création uniquement
                     notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`,
                     technical_data: {
                         qhare_info: qhareInfo // Stockage initial

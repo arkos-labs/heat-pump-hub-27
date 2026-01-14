@@ -174,9 +174,14 @@ export default function Agenda() {
                                 modifiersStyles={{
                                     booked: {
                                         fontWeight: 'bold',
-                                        textDecoration: 'underline',
-                                        color: 'var(--primary)'
+                                        backgroundColor: '#10b981', // green-500
+                                        color: 'white',
+                                        borderRadius: '4px'
                                     }
+                                }}
+                                classNames={{
+                                    day_selected: "bg-blue-600 text-white hover:bg-blue-600 focus:bg-blue-600",
+                                    day_today: "bg-accent text-accent-foreground",
                                 }}
                             />
                             <div className="mt-4 px-4 py-3 bg-muted/50 rounded-lg text-sm text-muted-foreground flex items-center gap-2">

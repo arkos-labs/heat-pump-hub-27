@@ -93,9 +93,9 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
       </div>
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="info">Informations Globales</TabsTrigger>
-          <TabsTrigger value="technical">Audit Technique</TabsTrigger>
+          {/* <TabsTrigger value="technical">Audit Technique</TabsTrigger> - Masqué à la demande */}
         </TabsList>
 
         <TabsContent value="info" className="space-y-4 mt-4">
@@ -227,7 +227,12 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm text-muted-foreground">Notes</p>
-                      <p>{client.notes}</p>
+                      <p className="whitespace-pre-wrap">
+                        {client.notes
+                          .replace(/\[AUDIT TECHNIQUE PAC[\s\S]*?\[FIN AUDIT\]/g, '') // Masquer l'audit
+                          .replace(/--- ⬇️ AUDIT TECHNIQUE ⬇️ ---[\s\S]*?--- ⬆️ FIN AUDIT ⬆️ ---/g, '') // Masquer ancien audit
+                          .trim() || <span className="italic opacity-50">Aucune note (Audit masqué)</span>}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -287,7 +292,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
           </Card>
         </TabsContent>
 
-        <TabsContent value="technical" className="mt-4">
+        {/* <TabsContent value="technical" className="mt-4">
           <TechnicalAuditForm
             client={client}
             onSave={(technicalData) => {
@@ -362,7 +367,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
 
             }}
           />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

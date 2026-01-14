@@ -204,12 +204,19 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2 text-sm">
                     {renderQhareField("Civilité", client.technicalData.qhare_info.civilite)}
                     {renderQhareField("Email", client.technicalData.qhare_info.email)}
-                    {renderQhareField("Email Secondaire", client.technicalData.qhare_info.email_secondaire)}
-                    {/* MPR */}
+                    {renderQhareField("Téléphone Fixe", client.technicalData.qhare_info.telephone_fixe || client.technicalData.qhare_info.tel_fixe)}
+
+                    {renderQhareField("Département", client.technicalData.qhare_info.departement)}
+                    {renderQhareField("Ville", client.technicalData.qhare_info.ville)}
+                    {renderQhareField("Source Lead", client.technicalData.qhare_info.source)}
+
+                    {renderQhareField("État Qhare", client.technicalData.qhare_info.etat)}
+                    {renderQhareField("Sous-État", client.technicalData.qhare_info.sous_etat)}
+                    {renderQhareField("Affectation", client.technicalData.qhare_info.affectation)}
+
                     {renderQhareField("Email MPR", client.technicalData.qhare_info.email_mpr)}
-                    {renderQhareField("Mot de Passe MPR", client.technicalData.qhare_info.mot_de_passe_mpr || client.technicalData.qhare_info.mdp_mpr)}
-                    {renderQhareField("N° Dossier MPR", client.technicalData.qhare_info.numero_dossier_mpr || client.technicalData.qhare_info.num_dossier_mpr)}
                     {renderQhareField("Zone (H1/H2/H3)", client.technicalData.qhare_info.zone)}
+                    {renderQhareField("N° Dossier MPR", client.technicalData.qhare_info.numero_dossier_mpr || client.technicalData.qhare_info.num_dossier_mpr)}
                   </div>
                 </div>
 
@@ -258,6 +265,34 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                     {renderQhareField("Numéro Parcelle", client.technicalData.qhare_info.numero_parcelle)}
                   </div>
                 </div>
+
+                {/* 5. COMMENTAIRES QHARE (1, 2, 3) */}
+                {(client.technicalData.qhare_info.commentaire_1 || client.technicalData.qhare_info.commentaire_2 || client.technicalData.qhare_info.commentaire_3) && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                      💬 Commentaires
+                    </h4>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      {client.technicalData.qhare_info.commentaire_1 && <p>1: {client.technicalData.qhare_info.commentaire_1}</p>}
+                      {client.technicalData.qhare_info.commentaire_2 && <p>2: {client.technicalData.qhare_info.commentaire_2}</p>}
+                      {client.technicalData.qhare_info.commentaire_3 && <p>3: {client.technicalData.qhare_info.commentaire_3}</p>}
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. BTOB INFO (Si présent) */}
+                {(client.technicalData.qhare_info.btob === 1 || client.technicalData.qhare_info.btob === "1") && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                      🏢 Infos Société (BtoB)
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {renderQhareField("Raison Sociale", client.technicalData.qhare_info.raison_sociale)}
+                      {renderQhareField("SIRET", client.technicalData.qhare_info.numero_siret)}
+                      {renderQhareField("Code Pays", client.technicalData.qhare_info.code_pays)}
+                    </div>
+                  </div>
+                )}
 
                 {/* 4. CHAMPS PERSONNALISES (Si disponibles) */}
                 {client.technicalData.qhare_info.champs_perso && client.technicalData.qhare_info.champs_perso.length > 0 && (

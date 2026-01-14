@@ -336,7 +336,9 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                         ? `${client.surface} m²`
                         : (client.technicalData?.qhare_info?.surface_habitable || client.technicalData?.qhare_info?.surface)
                           ? `${client.technicalData.qhare_info.surface_habitable || client.technicalData.qhare_info.surface} m²`
-                          : "Non renseigné"
+                          : (client.technicalData?.qhare_info?.champs_perso?.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur)
+                            ? `${client.technicalData.qhare_info.champs_perso.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur} m²`
+                            : "Non renseigné"
                       }
                     </p>
                   </div>

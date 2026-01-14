@@ -74,7 +74,12 @@ export default async function handler(req, res) {
                     adresse: data.adresse || data.address || existingClient.adresse,
                     ville: data.ville || data.city || existingClient.ville,
                     code_postal: data.code_postal || data.zipcode || existingClient.code_postal,
-                    surface: data.surface || data.surface_habitable ? parseFloat(data.surface || data.surface_habitable) : existingClient.surface,
+                    // Si pas de surface, chercher dans champs_perso
+                    surface: (data.surface || data.surface_habitable)
+                        ? parseFloat(data.surface || data.surface_habitable)
+                        : (data.champs_perso && data.champs_perso.find(c => c.nom && c.nom.toLowerCase().includes('surface') || c.variable && c.variable.toLowerCase().includes('surface')))
+                            ? parseFloat(data.champs_perso.find(c => c.nom && c.nom.toLowerCase().includes('surface') || c.variable && c.variable.toLowerCase().includes('surface')).valeur)
+                            : existingClient.surface,
                     type_chauffage_actuel: data.chauffage || existingClient.type_chauffage_actuel || 'inconnu',
                     technical_data: newTechnicalData
                 };
@@ -100,7 +105,12 @@ export default async function handler(req, res) {
                     adresse: data.adresse || data.address || null,
                     ville: data.ville || data.city || null,
                     code_postal: data.code_postal || data.zipcode || null,
-                    surface: data.surface || data.surface_habitable ? parseFloat(data.surface || data.surface_habitable) : 0,
+                    // Si pas de surface, chercher dans champs_perso
+                    surface: (data.surface || data.surface_habitable)
+                        ? parseFloat(data.surface || data.surface_habitable)
+                        : (data.champs_perso && data.champs_perso.find(c => c.nom && c.nom.toLowerCase().includes('surface') || c.variable && c.variable.toLowerCase().includes('surface')))
+                            ? parseFloat(data.champs_perso.find(c => c.nom && c.nom.toLowerCase().includes('surface') || c.variable && c.variable.toLowerCase().includes('surface')).valeur)
+                            : 0,
                     type_chauffage_actuel: data.chauffage || 'inconnu',
                     source: 'qhare',
                     status: 'nouveau',

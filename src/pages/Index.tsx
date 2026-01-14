@@ -23,6 +23,8 @@ import { statusLabels } from '@/types/client';
 import { Search } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useSearchParams } from 'react-router-dom';
+
 const Index = () => {
   const [clients, setClients] = useState<Client[]>([]); // Initialize with empty array
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -30,6 +32,7 @@ const Index = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showAddRdv, setShowAddRdv] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams(); // Add this line
 
   // Fetch clients from Supabase and auto-update status based on date
   useEffect(() => {
@@ -76,17 +79,40 @@ const Index = () => {
             };
           });
           setClients(mappedClients);
+
+          // Deep linking logic: Check if URL has client_id
+          const urlClientId = searchParams.get('client_id');
+          if (urlClientId) {
+            const targetClient = mappedClients.find(c => c.id === urlClientId);
+            if (targetClient) {
+              setSelectedClient(targetClient);
+              // Clean URL optionally or leave it
+              // setSearchParams({}); 
+            }
+          }
+
         }
       } catch (err) {
         console.error("Erreur chargement Supabase:", err);
-
         toast.error("Impossible de charger les clients");
       } finally {
         setLoading(false);
       }
     };
     loadClients();
-  }, []);
+  }, [searchParams]); // Depend on searchParams (or just leave empty and read once if we only want init) - better to leave empty dep array for loadClients but handle params inside. 
+  // Wait, if searchParams changes, we might want to re-select? 
+  // Usually loadClients runs ONCE on mount. Then we check params.
+  // Let's keep dependencies simple. Since loadClients is inside, we can just put searchParams in dep array if we want instant reaction, but usually Index remounts. 
+  // Better: Extract logic. But for now, inside mappedClients block is fine.
+  // WARNING: Adding searchParams to dependency might cause loop if we update params. 
+  // Since we don't update params here, it's safe-ish. But let's just use empty array for loadClients to run once, 
+  // and maybe a separate effect for param change if clients are already loaded? 
+  // No, easiest is to run it when data loads.
+
+  // Let's modify the useEffect dependency slightly or just ignore the warning about deps since we define function inside.
+  // Actually, 'searchParams' is stable enough.
+
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =

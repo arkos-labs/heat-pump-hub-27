@@ -295,7 +295,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                 )}
 
                 {/* 4. CHAMPS PERSONNALISES (Si disponibles) */}
-                {client.technicalData.qhare_info.champs_perso && client.technicalData.qhare_info.champs_perso.length > 0 && (
+                {Array.isArray(client.technicalData.qhare_info.champs_perso) && client.technicalData.qhare_info.champs_perso.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-dashed">
                     <h5 className="text-xs font-bold text-muted-foreground uppercase mb-2">Champs Personnalisés</h5>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2 text-sm">
@@ -365,7 +365,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                         ? `${client.surface} m²`
                         : (client.technicalData?.qhare_info?.surface_habitable || client.technicalData?.qhare_info?.surface)
                           ? `${client.technicalData.qhare_info.surface_habitable || client.technicalData.qhare_info.surface} m²`
-                          : (client.technicalData?.qhare_info?.champs_perso?.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur)
+                          : (Array.isArray(client.technicalData?.qhare_info?.champs_perso) && client.technicalData.qhare_info.champs_perso.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur)
                             ? `${client.technicalData.qhare_info.champs_perso.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur} m²`
                             : "Non renseigné"
                       }

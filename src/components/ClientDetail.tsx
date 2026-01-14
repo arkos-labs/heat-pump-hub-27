@@ -306,22 +306,22 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                   </div>
                 )}
 
-                {/* Debug Discret: Toutes les clés reçues */}
-                <div className="pt-2 mt-2 border-t">
-                  <details className="text-xs text-muted-foreground">
-                    <summary className="cursor-pointer hover:text-primary mb-2">Voir toutes les données brutes (Debug)</summary>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-1 gap-x-2 font-mono bg-muted/50 p-2 rounded max-h-60 overflow-y-auto">
-                      {Object.entries(client.technicalData.qhare_info).map(([key, val]) => {
-                        if (typeof val === 'object' && val !== null) return null;
-                        return (
-                          <div key={key} className="flex flex-col border-b border-border/50 pb-1">
-                            <span className="text-[10px] text-muted-foreground break-all">{key}</span>
-                            <span className="font-semibold break-all text-xs">{String(val)}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </details>
+                {/* 7. TOUT VOIR (DEBUG COMPLET - TEMPORAIRE) */}
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="text-sm font-bold text-red-500 mb-3 flex items-center gap-2">
+                    🕵️ TOUTES LES DONNÉES REÇUES (DEBUG)
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-2 text-xs font-mono bg-muted p-2 rounded">
+                    {Object.entries(client.technicalData.qhare_info).map(([key, val]) => {
+                      if (typeof val === 'object' && val !== null) return null; // Skip objects/arrays for now
+                      return (
+                        <div key={key} className="flex flex-col border-b pb-1">
+                          <span className="text-muted-foreground">{key}</span>
+                          <span className="font-bold break-all">{String(val)}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
 
               </CardContent>

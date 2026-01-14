@@ -242,15 +242,33 @@ const Index = () => {
         etat,
         sous_etat,
         ...dates,
-        comment,
+        // comment // ON RETIRE LE COMMENTAIRE DU PAYLOAD PRINCIPAL
         extras
       };
 
+      // 1. Mise à jour des infos (Etat, Dates, Extras)
       const response = await fetch('/api/update-qhare', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
+
+      // 2. Si on a un commentaire, on fait un DEUXIÈME appel dédié uniquement au commentaire
+      // C'est souvent nécessaire car certaines API (dont peut-être celle-ci) ignorent 'commentaire' si d'autres champs majeurs sont mis à jour simultanément.
+      if (comment) {
+        console.log("Envoi du commentaire séparé...");
+        await fetch('/api/update-qhare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            qhareId,
+            comment
+          }),
+        });
+      }
+
       const result = await response.json();
 
       if (result.success) {

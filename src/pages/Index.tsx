@@ -75,6 +75,7 @@ const Index = () => {
               rdvs: appointments,
               createdAt: row.created_at,
               technicalData: row.technical_data,
+              source: row.source,
               notes: row.notes
             };
           });
@@ -100,19 +101,7 @@ const Index = () => {
       }
     };
     loadClients();
-  }, [searchParams]); // Depend on searchParams (or just leave empty and read once if we only want init) - better to leave empty dep array for loadClients but handle params inside. 
-  // Wait, if searchParams changes, we might want to re-select? 
-  // Usually loadClients runs ONCE on mount. Then we check params.
-  // Let's keep dependencies simple. Since loadClients is inside, we can just put searchParams in dep array if we want instant reaction, but usually Index remounts. 
-  // Better: Extract logic. But for now, inside mappedClients block is fine.
-  // WARNING: Adding searchParams to dependency might cause loop if we update params. 
-  // Since we don't update params here, it's safe-ish. But let's just use empty array for loadClients to run once, 
-  // and maybe a separate effect for param change if clients are already loaded? 
-  // No, easiest is to run it when data loads.
-
-  // Let's modify the useEffect dependency slightly or just ignore the warning about deps since we define function inside.
-  // Actually, 'searchParams' is stable enough.
-
+  }, [searchParams]);
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
@@ -121,7 +110,9 @@ const Index = () => {
         .includes(searchQuery.toLowerCase());
     const matchesStatus =
       statusFilter === 'all' || client.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const isQhare = client.source === 'qhare';
+
+    return matchesSearch && matchesStatus && isQhare;
   });
 
   const handleStatusChange = async (status: ClientStatus) => {
@@ -427,7 +418,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Tableau de bord</h1>
+                <h1 className="text-2xl font-bold text-foreground">BtoC</h1>
                 <p className="text-sm text-muted-foreground">
                   Vue d'ensemble des activités
                 </p>

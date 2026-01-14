@@ -23,6 +23,7 @@ export interface Client {
   surface: number;
   typeChauffageActuel: string;
   puissanceEstimee?: string;
+  source?: string;
   notes?: string;
   rdvs: Appointment[];
   createdAt: string;

@@ -29,21 +29,21 @@ export interface Client {
   createdAt: string;
   technicalData?: {
     liaison: {
-      distance: number; // max 10m
-      hauteurSousPlafond: number;
-      largeurPorte: number; // min 65cm
-      typeEscalier: 'droit' | 'L' | 'colimacon' | 'autre';
-      largeurEscalier?: number; // Nouveau
+      distance: number | string; // max 10m
+      hauteurSousPlafond: number | string;
+      largeurPorte: number | string; // min 65cm
+      typeEscalier: string;
+      largeurEscalier?: number | string; // Nouveau
     };
     groupeExterieur: {
-      typeSupport: 'dalle_beton' | 'equerres' | 'big_foot';
+      typeSupport: string;
     };
     ballons: {
-      distanceCapteurBallon?: number; // max 18m
-      distancePacBallon?: number; // 1m
+      distanceCapteurBallon?: number | string; // max 18m
+      distancePacBallon?: number | string; // 1m
       type: 'solaire' | 'electrique' | 'thermodynamique';
-      hauteurPlafondRequis?: number;
-      distanceEntreBallons?: number; // Nouveau
+      hauteurPlafondRequis?: number | string;
+      distanceEntreBallons?: number | string; // Nouveau
     };
     elec: {
       alimentation: 'monophase' | 'triphase';
@@ -59,14 +59,14 @@ export interface Client {
       typeIsolation?: string;
       typeRadiateurs?: string;
       emplacementInterieur?: string; // Nouveau
-      largeurDisponible?: number; // Nouveau
+      largeurDisponible?: number | string; // Nouveau
       typeMur?: string; // Nouveau
       obstacles?: string; // Nouveau
-      surfaceChauffee?: number;
-      temperatureSouhaitee?: number;
+      surfaceChauffee?: number | string;
+      temperatureSouhaitee?: number | string;
       emplacementChaudiere?: string;
       emplacementPacExterieur?: string; // Détails texte
-      distancePacIntExt?: number; // Redondant avec liaison.distance mais explicite
+      distancePacIntExt?: number | string; // Redondant avec liaison.distance mais explicite
       kva?: string;
       isolationCombles?: string; // "Ventilé ? Type ?"
       isolationPlancherBas?: string;

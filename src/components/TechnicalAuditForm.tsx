@@ -90,26 +90,22 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                         <div className="space-y-2">
                             <Label>Surface Chauffée (m²)</Label>
                             <Input
-                                type="number"
-                                value={formData.visite?.surfaceChauffee}
-                                onChange={(e) => updateVisite('surfaceChauffee', Number(e.target.value))}
+                                value={formData.visite?.surfaceChauffee || ''}
+                                onChange={(e) => updateVisite('surfaceChauffee', e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
                             <Label>Température ambiante souhaitée (°C)</Label>
                             <Input
-                                type="number"
-                                value={formData.visite?.temperatureSouhaitee}
-                                onChange={(e) => updateVisite('temperatureSouhaitee', Number(e.target.value))}
+                                value={formData.visite?.temperatureSouhaitee || ''}
+                                onChange={(e) => updateVisite('temperatureSouhaitee', e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
                             <Label>HSP (Hauteur Sous Plafond) en m</Label>
                             <Input
-                                type="number"
-                                step="0.01"
-                                value={formData.liaison?.hauteurSousPlafond}
-                                onChange={(e) => updateLiaison('hauteurSousPlafond', Number(e.target.value))}
+                                value={formData.liaison?.hauteurSousPlafond || ''}
+                                onChange={(e) => updateLiaison('hauteurSousPlafond', e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
@@ -229,10 +225,9 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                                 <div>
                                     <Label className="text-xs">Espace Sol (Largeur cm)</Label>
                                     <Input
-                                        type="number"
                                         placeholder="Min 60cm"
-                                        value={formData.visite?.largeurDisponible}
-                                        onChange={(e) => updateVisite('largeurDisponible', Number(e.target.value))}
+                                        value={formData.visite?.largeurDisponible || ''}
+                                        onChange={(e) => updateVisite('largeurDisponible', e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -244,28 +239,25 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                                 <div className="space-y-1">
                                     <Label className="text-xs">Dist. PAC-Ballon (Max 1m)</Label>
                                     <Input
-                                        type="number"
                                         placeholder="Mètres"
-                                        value={formData.ballons?.distancePacBallon}
-                                        onChange={(e) => updateBallons('distancePacBallon', Number(e.target.value))}
+                                        value={formData.ballons?.distancePacBallon || ''}
+                                        onChange={(e) => updateBallons('distancePacBallon', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <Label className="text-xs">Dist. Capteurs-Ballon (Max 18m)</Label>
                                     <Input
-                                        type="number"
                                         placeholder="Mètres"
-                                        value={formData.ballons?.distanceCapteurBallon}
-                                        onChange={(e) => updateBallons('distanceCapteurBallon', Number(e.target.value))}
+                                        value={formData.ballons?.distanceCapteurBallon || ''}
+                                        onChange={(e) => updateBallons('distanceCapteurBallon', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <Label className="text-xs">H. Sous Plafond (Min 2.20m)</Label>
                                     <Input
-                                        type="number"
                                         placeholder="Mètres"
-                                        value={formData.liaison?.hauteurSousPlafond}
-                                        onChange={(e) => updateLiaison('hauteurSousPlafond', Number(e.target.value))}
+                                        value={formData.liaison?.hauteurSousPlafond || ''}
+                                        onChange={(e) => updateLiaison('hauteurSousPlafond', e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -277,9 +269,8 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                                 <div>
                                     <Label className="text-xs">Largeur Porte (+65cm)</Label>
                                     <Input
-                                        type="number"
-                                        value={formData.liaison?.largeurPorte}
-                                        onChange={(e) => updateLiaison('largeurPorte', Number(e.target.value))}
+                                        value={formData.liaison?.largeurPorte || ''}
+                                        onChange={(e) => updateLiaison('largeurPorte', e.target.value)}
                                     />
                                 </div>
                                 <div className="col-span-2">
@@ -348,7 +339,8 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                 </CardHeader>
                 <CardContent>
                     {(() => {
-                        const s = formData.visite?.surfaceChauffee || 0;
+                        const rawSurf = formData.visite?.surfaceChauffee;
+                        const s = typeof rawSurf === 'string' ? parseFloat(rawSurf) : (rawSurf || 0);
 
                         let modele = "";
                         let puissanceDetails = "";

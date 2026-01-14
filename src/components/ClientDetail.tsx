@@ -358,7 +358,10 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                   </h5>
                   <div className="text-sm space-y-1">
                     <p><span className="text-muted-foreground">Accès :</span> {client.technicalData.liaison?.typeEscalier || '?'}</p>
-                    <p><span className="text-muted-foreground">Distances :</span> Int/Ext: {client.technicalData.liaison?.distance || '?'}m</p>
+                    <p><span className="text-muted-foreground">Hauteur Plafond :</span> {client.technicalData.liaison?.hauteurSousPlafond || '?'} m</p>
+                    <p><span className="text-muted-foreground">Distances :</span> Int/Ext: {client.technicalData.liaison?.distance || '?'}m | PAC-Ballon: {client.technicalData.ballons?.distancePacBallon || '?'}m</p>
+                    <p><span className="text-muted-foreground">Solaire :</span> Dist. Capteurs: {client.technicalData.ballons?.distanceCapteurBallon || 'N/A'}m</p>
+                    <p><span className="text-muted-foreground">Support Ext :</span> {client.technicalData.groupeExterieur?.typeSupport || '?'}</p>
                     <p><span className="text-muted-foreground">Elec :</span> {(client.technicalData.elec?.alimentation || '?').toUpperCase()} ({client.technicalData.visite.kva || '?'} kVA)</p>
                   </div>
                 </div>
@@ -477,6 +480,67 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="technical" className="mt-4">
+          <TechnicalAuditForm
+            client={client}
+            onSave={(technicalData) => {
+              // On met à jour les données techniques
+              let updatedClient = {
+                ...client,
+                technicalData: technicalData
+              };
+
+              // Création du résumé pour les notes (Format segmenté)
+              const todayStr = new Date().toLocaleDateString('fr-FR');
+              const visite = technicalData.visite;
+              const liaison = technicalData.liaison;
+              const ballons = technicalData.ballons;
+
+              // Recalcul simple pour la note
+              const s = Number(visite?.surfaceChauffee) || 0;
+              let solutionEstimee = "?";
+              if (s < 80) solutionEstimee = "6-8 kW";
+              else if (s < 100) solutionEstimee = "10 kW";
+              else if (s < 120) solutionEstimee = "12 kW";
+              else if (s < 140) solutionEstimee = "14 kW";
+              else if (s <= 170) solutionEstimee = "16 kW";
+              else solutionEstimee = "> 16 kW";
+
+              const summaryValues = [
+                `[VISITE TECHNIQUE - ${todayStr}]`,
+                `> ETUDE & SOLUTION (Bureau)`,
+                `Surface : ${s}m² | T° : ${visite?.temperatureSouhaitee || '?'}°C`,
+                `Isolation : ${visite?.typeIsolation || '?'} | Radiateurs : ${visite?.typeRadiateurs || '?'}`,
+                `SOLUTION ESTIMÉE : PAC ${solutionEstimee}`,
+                ``,
+                `> INFO CHANTIER (Installateur)`,
+                `Accès : ${liaison?.typeEscalier || '?'} (${liaison?.largeurEscalier || '?'}cm) | Portes: ${liaison?.largeurPorte}cm`,
+                `Hauteur Plafond : ${liaison?.hauteurSousPlafond || '?'}m`,
+                `Dist. Int/Ext : ${liaison?.distance || '?'}m | PAC-Ballon : ${ballons?.distancePacBallon || '?'}m`,
+                `Dist. Solaire : ${ballons?.distanceCapteurBallon || 'N/A'}m`,
+                `Support Ext : ${technicalData.groupeExterieur?.typeSupport || '?'}`,
+                `Elec : ${technicalData.elec.alimentation?.toUpperCase()} (${visite?.kva || '?'} kVA)`,
+                `[FIN VISITE]`
+              ];
+
+              const newFormattedBlock = summaryValues.join('\n');
+              let newNotes = client.notes || '';
+
+              // Regex pour remplacer l'ancien bloc s'il existe
+              const blockRegex = /\[VISITE TECHNIQUE - .*?\][\s\S]*?\[FIN VISITE\]/;
+
+              if (blockRegex.test(newNotes)) {
+                newNotes = newNotes.replace(blockRegex, newFormattedBlock);
+              } else {
+                newNotes = newNotes ? `${newNotes}\n\n${newFormattedBlock}` : newFormattedBlock;
+              }
+
+              updatedClient.notes = newNotes;
+              onUpdateClient(updatedClient);
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="documents" className="mt-4">

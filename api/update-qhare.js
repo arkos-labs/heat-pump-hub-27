@@ -50,14 +50,19 @@ export default async function handler(req, res) {
         params.append('btob', '0');
         params.append('raison_sociale', 'Particulier');
 
-        const targetUrl = `https://qhare.fr/api/lead/update?${params.toString()}`;
-        console.log('Calling Qhare URL:', targetUrl.replace(ACCESS_TOKEN, 'HIDDEN'));
+        // URL de base sans paramètres
+        const targetUrl = `https://qhare.fr/api/lead/update`;
 
+        console.log('Calling Qhare URL (POST Body):', targetUrl);
+
+        // On envoie les données dans le CORPS de la requête (Body)
+        // C'est indispensable pour les longs textes comme les rapports d'audit.
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json', // Some servers expect this even with empty body
-            }
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params.toString() // URLSearchParams convertit tout seul en format compatible body
         });
 
         const result = await response.json();

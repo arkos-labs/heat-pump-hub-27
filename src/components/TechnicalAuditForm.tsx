@@ -165,7 +165,6 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
             </Card>
 
             {/* SECTION 3: Électricité & Implantation */}
-            {/* SECTION 3: Électricité & Implantation */}
             <Card>
                 <CardHeader>
                     <CardTitle>3. Électricité & Implantation PAC</CardTitle>

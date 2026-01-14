@@ -326,24 +326,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-4 w-4 flex items-center justify-center text-muted-foreground text-sm font-bold">
-                    m²
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Surface</p>
-                    <p className="font-medium">
-                      {(client.surface && client.surface > 0)
-                        ? `${client.surface} m²`
-                        : (client.technicalData?.qhare_info?.surface_habitable || client.technicalData?.qhare_info?.surface)
-                          ? `${client.technicalData.qhare_info.surface_habitable || client.technicalData.qhare_info.surface} m²`
-                          : (Array.isArray(client.technicalData?.qhare_info?.champs_perso) && client.technicalData.qhare_info.champs_perso.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur)
-                            ? `${client.technicalData.qhare_info.champs_perso.find((c: any) => c.nom?.toLowerCase().includes('surface') || c.variable?.toLowerCase().includes('surface'))?.valeur} m²`
-                            : "Non renseigné"
-                      }
-                    </p>
-                  </div>
-                </div>
+
                 <div className="flex items-center gap-3">
                   <Thermometer className="h-4 w-4 text-muted-foreground" />
                   <div>

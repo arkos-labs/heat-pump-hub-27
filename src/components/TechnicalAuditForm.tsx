@@ -165,6 +165,7 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
             </Card>
 
             {/* SECTION 3: Électricité & Implantation */}
+            {/* SECTION 3: Électricité & Implantation */}
             <Card>
                 <CardHeader>
                     <CardTitle>3. Électricité & Implantation PAC</CardTitle>
@@ -172,83 +173,151 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Monophasé ou Triphasé ?</Label>
+                            <Label>Type d'alimentation & Puissance</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Select
+                                    value={formData.elec?.alimentation}
+                                    onValueChange={(val: any) => updateElec('alimentation', val)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="monophase">Monophasé (Max 9kVA)</SelectItem>
+                                        <SelectItem value="triphase">Triphasé (Max 18kVA)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Input
+                                    placeholder="kVA (ex: 9)"
+                                    value={formData.visite?.kva}
+                                    onChange={(e) => updateVisite('kva', e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Support Groupe Extérieur</Label>
                             <Select
-                                value={formData.elec?.alimentation}
-                                onValueChange={(val: any) => updateElec('alimentation', val)}
+                                value={formData.groupeExterieur?.typeSupport}
+                                onValueChange={(val: any) => setFormData(p => ({ ...p, groupeExterieur: { typeSupport: val } }))}
                             >
                                 <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue placeholder="Choisir support..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="monophase">Monophasé</SelectItem>
-                                    <SelectItem value="triphase">Triphasé</SelectItem>
+                                    <SelectItem value="dalle_beton">Dalle Béton (Recommandé)</SelectItem>
+                                    <SelectItem value="big_foot">Buffer / Big Foot (Si sol stable)</SelectItem>
+                                    <SelectItem value="equerres">Équerres Murales (Si mur solide)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Puissance compteur (kVA) ?</Label>
-                            <Input
-                                placeholder="6, 9, 12..."
-                                value={formData.visite?.kva}
-                                onChange={(e) => updateVisite('kva', e.target.value)}
-                            />
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                            <Label>Emplacement Pose PAC Extérieur</Label>
-                            <div className="mb-2">
-                                <Input
-                                    placeholder="Détails (Betonné ? Mur ? Distance ?)..."
-                                    value={formData.visite?.emplacementPacExterieur}
-                                    onChange={(e) => updateVisite('emplacementPacExterieur', e.target.value)}
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Distance Int/Ext (m)</Label>
-                                    <Input
-                                        type="number"
-                                        value={formData.liaison?.distance}
-                                        onChange={(e) => updateLiaison('distance', Number(e.target.value))}
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Largeur Escalier (cm)</Label>
-                                    <Input
-                                        type="number"
-                                        placeholder="Si escalier..."
-                                        value={formData.liaison?.largeurEscalier}
-                                        onChange={(e) => updateLiaison('largeurEscalier', Number(e.target.value))}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Si SSC : Type de toiture & Ballon</Label>
-                            <Input
-                                placeholder="Tuiles, Ardoise..."
-                                value={formData.elec?.typeCouverture}
-                                onChange={(e) => updateElec('typeCouverture', e.target.value)}
-                            />
-                            <div className="mt-2">
-                                <Label className="text-xs">Distance entre ballons (si plusieurs)</Label>
-                                <Input
-                                    type="number"
-                                    value={formData.ballons?.distanceEntreBallons}
-                                    onChange={(e) => updateBallons('distanceEntreBallons', Number(e.target.value))}
-                                />
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="flex items-center space-x-2 pt-4 border-t">
-                        <Checkbox
-                            id="imprimante"
-                            checked={formData.visite?.imprimante}
-                            onCheckedChange={(checked) => updateVisite('imprimante', checked)}
-                        />
-                        <Label htmlFor="imprimante">Le client a-t-il une imprimante ? (Pour doc à signer)</Label>
+                        <div className="space-y-2 md:col-span-2">
+                            <Label className="font-semibold text-primary">Contraintes Distances & Accès</Label>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Dist. PAC-Ballon (Max 1m)</Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="Mètres"
+                                        value={formData.ballons?.distancePacBallon}
+                                        onChange={(e) => updateBallons('distancePacBallon', Number(e.target.value))}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Dist. Capteurs-Ballon (Max 18m)</Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="Mètres"
+                                        value={formData.ballons?.distanceCapteurBallon}
+                                        onChange={(e) => updateBallons('distanceCapteurBallon', Number(e.target.value))}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">H. Sous Plafond (Min 2.20m)</Label>
+                                    <Input
+                                        type="number"
+                                        placeholder="Mètres"
+                                        value={formData.liaison?.hauteurSousPlafond}
+                                        onChange={(e) => updateLiaison('hauteurSousPlafond', Number(e.target.value))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2 border p-2 rounded bg-muted/20">
+                            <Label className="text-xs font-semibold">Passage Matériel (Portes & Escaliers)</Label>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <Label className="text-xs">Largeur Porte (+65cm)</Label>
+                                    <Input
+                                        type="number"
+                                        value={formData.liaison?.largeurPorte}
+                                        onChange={(e) => updateLiaison('largeurPorte', Number(e.target.value))}
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <Label className="text-xs">Type Escalier</Label>
+                                    <Select
+                                        value={formData.liaison?.typeEscalier}
+                                        onValueChange={(val: any) => updateLiaison('typeEscalier', val)}
+                                    >
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="droit">Droit (OK)</SelectItem>
+                                            <SelectItem value="L">En L (Attention virage)</SelectItem>
+                                            <SelectItem value="colimacon">Colimaçon (❌ Difficile)</SelectItem>
+                                            <SelectItem value="autre">Autre</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* SECTION VALIDATION CONTRATINTES */}
+            <Card className="border-orange-200 bg-orange-50">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2 text-orange-800">
+                        🔍 Vérification Contraintes Chantier
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                    {(() => {
+                        const logs = [];
+                        const l = formData.liaison;
+                        const b = formData.ballons;
+                        const sup = formData.groupeExterieur?.typeSupport;
+
+                        // 1. Passage
+                        if (l?.largeurPorte && l.largeurPorte < 65) logs.push(`⚠️ Porte étroite (${l.largeurPorte}cm). Min 60cm PAC / 65cm Ballon.`);
+                        else if (l?.largeurPorte) logs.push(`✅ Passage Porte OK (>65cm)`);
+
+                        if (l?.typeEscalier === 'colimacon') logs.push(`❌ Escalier Colimaçon : Passage ballon 200L/PAC impossible ou très difficile.`);
+                        if (l?.typeEscalier === 'L') logs.push(`⚠️ Escalier en L : Vérifier largeur virage pour ballon 1.84m.`);
+
+                        // 2. Hauteur
+                        if (l?.hauteurSousPlafond && l.hauteurSousPlafond < 2.15) logs.push(`❌ Hauteur Plafond (${l.hauteurSousPlafond}m) : Risque pour Ballon Thermodyn (1.84m + 30cm requis).`);
+
+                        // 3. Distances
+                        if (b?.distancePacBallon && b.distancePacBallon > 1) logs.push(`⚠️ Distance PAC-Ballon (${b.distancePacBallon}m) > 1m. Déperdition thermique.`);
+                        if (b?.distanceCapteurBallon && b.distanceCapteurBallon > 18) logs.push(`⚠️ Liaison Solaire (${b.distanceCapteurBallon}m) > 18m. Risque performance.`);
+
+                        // 4. Support
+                        if (!sup || sup === 'autre') logs.push(`⚠️ Support Extérieur non défini. Prévoir Dalle, Big Foot ou Équerres.`);
+
+                        if (logs.length === 0) return <p className="text-sm text-muted-foreground italic">Remplissez les dimensions pour vérifier...</p>;
+
+                        return logs.map((log, i) => (
+                            <div key={i} className={`text-sm ${log.includes('✅') ? 'text-green-700' : log.includes('❌') ? 'text-red-700 font-bold' : 'text-orange-700'}`}>
+                                {log}
+                            </div>
+                        ));
+                    })()}
                 </CardContent>
             </Card>
 

@@ -70,7 +70,7 @@ const Index = () => {
               codePostal: row.code_postal || '',
               status: computedStatus,
               typeLogement: row.type_logement || 'maison',
-              surface: row.surface || 100,
+              surface: row.surface || (row.technical_data?.qhare_info?.surface_habitable ? parseFloat(row.technical_data.qhare_info.surface_habitable) : 0),
               typeChauffageActuel: row.type_chauffage_actuel || 'inconnu',
               rdvs: appointments,
               createdAt: row.created_at,

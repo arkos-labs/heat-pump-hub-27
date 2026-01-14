@@ -74,6 +74,7 @@ export default async function handler(req, res) {
                     adresse: data.adresse || data.address || existingClient.adresse,
                     ville: data.ville || data.city || existingClient.ville,
                     code_postal: data.code_postal || data.zipcode || existingClient.code_postal,
+                    surface: data.surface || data.surface_habitable ? parseFloat(data.surface || data.surface_habitable) : existingClient.surface,
                     technical_data: newTechnicalData
                 };
 
@@ -98,6 +99,7 @@ export default async function handler(req, res) {
                     adresse: data.adresse || data.address || null,
                     ville: data.ville || data.city || null,
                     code_postal: data.code_postal || data.zipcode || null,
+                    surface: data.surface || data.surface_habitable ? parseFloat(data.surface || data.surface_habitable) : 0,
                     source: 'qhare',
                     status: 'nouveau',
                     notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`,

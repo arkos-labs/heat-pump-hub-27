@@ -188,42 +188,81 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
           </Card>
 
           {/* Informations Complémentaires (Qhare) */}
+          {/* Informations Complémentaires (Qhare) */}
           {client.technicalData?.qhare_info && (
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold">Détails Importés (Qhare)</CardTitle>
+              <CardHeader className="pb-3 border-b">
+                <CardTitle className="text-base font-semibold">Dossier Qhare (Complet)</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Section Avis d'Imposition */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Avis d'Imposition</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+              <CardContent className="space-y-6 pt-4">
+
+                {/* 1. INFORMATIONS CONTACT & ADMINISTRATIF */}
+                <div>
+                  <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                    📝 Informations Client & Administratif
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2 text-sm">
+                    {renderQhareField("Civilité", client.technicalData.qhare_info.civilite)}
+                    {renderQhareField("Email", client.technicalData.qhare_info.email)}
+                    {renderQhareField("Email Secondaire", client.technicalData.qhare_info.email_secondaire)}
+                    {/* MPR */}
+                    {renderQhareField("Email MPR", client.technicalData.qhare_info.email_mpr)}
+                    {renderQhareField("Mot de Passe MPR", client.technicalData.qhare_info.mot_de_passe_mpr || client.technicalData.qhare_info.mdp_mpr)}
+                    {renderQhareField("N° Dossier MPR", client.technicalData.qhare_info.numero_dossier_mpr || client.technicalData.qhare_info.num_dossier_mpr)}
+                    {renderQhareField("Zone Action Logement", client.technicalData.qhare_info.zone_action_logement)}
+                  </div>
+                </div>
+
+                {/* 2. AVIS D'IMPOSITION */}
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                    💶 Avis d'Imposition
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2 text-sm">
                     {renderQhareField("Numéro Fiscal 1", client.technicalData.qhare_info.numero_fiscal_1 || client.technicalData.qhare_info.num_fiscal_1)}
-                    {renderQhareField("Ref. Avis 1", client.technicalData.qhare_info.reference_avis_1 || client.technicalData.qhare_info.ref_avis_1)}
+                    {renderQhareField("Référence Avis 1", client.technicalData.qhare_info.reference_avis_1 || client.technicalData.qhare_info.ref_avis_1)}
                     {renderQhareField("RFR 1", client.technicalData.qhare_info.revenu_fiscal_reference_1 || client.technicalData.qhare_info.rfr_1)}
-                    {renderQhareField("Nb Parts", client.technicalData.qhare_info.nombre_parts || client.technicalData.qhare_info.nb_parts)}
+
+                    {renderQhareField("Numéro Fiscal 2", client.technicalData.qhare_info.numero_fiscal_2 || client.technicalData.qhare_info.num_fiscal_2)}
+                    {renderQhareField("Nombre de Parts", client.technicalData.qhare_info.nombre_parts || client.technicalData.qhare_info.nb_parts)}
+                    {renderQhareField("Personnes Foyer", client.technicalData.qhare_info.nombre_personnes || client.technicalData.qhare_info.personnes_foyer)}
+
                     {renderQhareField("Précarité", client.technicalData.qhare_info.precarite)}
                     {renderQhareField("MaPrimeRenov", client.technicalData.qhare_info.maprimerenov)}
                   </div>
                 </div>
 
-                {/* Section Logement */}
-                <div className="space-y-2 pt-2 border-t">
-                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Logement</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    {renderQhareField("Propriétaire ?", client.technicalData.qhare_info.proprietaire)}
-                    {renderQhareField("Occupant ?", client.technicalData.qhare_info.proprietaire_occupant)}
-                    {renderQhareField("Type Maison", client.technicalData.qhare_info.type_maison)}
+                {/* 3. LOGEMENT & TECHNIQUE */}
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                    🏠 Logement & Technique
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2 text-sm">
+                    {renderQhareField("Statut Occupation", client.technicalData.qhare_info.proprietaire || client.technicalData.qhare_info.statut_occupation)}
+                    {renderQhareField("Propriétaire Occupant", client.technicalData.qhare_info.proprietaire_occupant)}
+                    {renderQhareField("Bâtiment de France", client.technicalData.qhare_info.batiment_de_france || client.technicalData.qhare_info.bdf)}
+
+                    {renderQhareField("Type de Maison", client.technicalData.qhare_info.type_maison)}
+                    {renderQhareField("Combles", client.technicalData.qhare_info.type_combles)}
+                    {renderQhareField("Sol Combles", client.technicalData.qhare_info.sol_combles || client.technicalData.qhare_info.sol_combles_beton)}
+
+                    {renderQhareField("Surface Habitable", client.technicalData.qhare_info.surface_habitable || client.technicalData.qhare_info.surface)}
+                    {renderQhareField("Surface Murs Ext.", client.technicalData.qhare_info.surface_murs_exterieurs)}
+                    {renderQhareField("Nombre de Pièces", client.technicalData.qhare_info.nombre_pieces || client.technicalData.qhare_info.nb_pieces)}
+
+                    {renderQhareField("Chauffage Actuel", client.technicalData.qhare_info.chauffage || client.technicalData.qhare_info.mode_chauffage || client.technicalData.qhare_info.type_chauffage)}
+                    {renderQhareField("Type Toiture", client.technicalData.qhare_info.type_toiture)}
+                    {renderQhareField("Année Chaudière", client.technicalData.qhare_info.annee_chaudiere)}
+
                     {renderQhareField("Année Construction", client.technicalData.qhare_info.annee_construction)}
-                    {renderQhareField("Surface Habitable", client.technicalData.qhare_info.surface_habitable)}
-                    {renderQhareField("Mode Chauffage", client.technicalData.qhare_info.mode_chauffage || client.technicalData.qhare_info.chauffage)}
+                    {renderQhareField("Numéro Parcelle", client.technicalData.qhare_info.numero_parcelle)}
                   </div>
                 </div>
 
                 {/* Debug / Fallback pour tout voir si les clés ne matchent pas */}
-                <div className="pt-2 border-t">
+                <div className="pt-2 border-t mt-2">
                   <details className="text-xs text-muted-foreground">
-                    <summary className="cursor-pointer hover:text-primary">Voir toutes les données brutes</summary>
+                    <summary className="cursor-pointer hover:text-primary">Voir données brutes (Debug)</summary>
                     <pre className="mt-2 p-2 bg-muted rounded overflow-auto max-h-40">
                       {JSON.stringify(client.technicalData.qhare_info, null, 2)}
                     </pre>

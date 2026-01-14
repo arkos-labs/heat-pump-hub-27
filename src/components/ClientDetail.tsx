@@ -438,16 +438,33 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                 technicalData: technicalData
               };
 
-              // Création du résumé pour les notes (Format simple)
+              // Création du résumé pour les notes (Format segmenté)
               const todayStr = new Date().toLocaleDateString('fr-FR');
               const visite = technicalData.visite;
+              const liaison = technicalData.liaison;
+
+              // Recalcul simple pour la note (Logique identique Formulaire)
+              const s = Number(visite?.surfaceChauffee) || 0;
+              let solutionEstimee = "?";
+              if (s < 80) solutionEstimee = "6-8 kW";
+              else if (s < 100) solutionEstimee = "10 kW";
+              else if (s < 120) solutionEstimee = "12 kW";
+              else if (s < 140) solutionEstimee = "14 kW";
+              else if (s <= 170) solutionEstimee = "16 kW";
+              else solutionEstimee = "> 16 kW";
 
               const summaryValues = [
                 `[VISITE TECHNIQUE - ${todayStr}]`,
-                `Surface: ${visite?.surfaceChauffee || '?'}m² - T°: ${visite?.temperatureSouhaitee || '?'}°C`,
-                `Isolation: ${visite?.typeIsolation || 'Non renseigné'}`,
-                `Radiateurs: ${visite?.typeRadiateurs || '?'}`,
-                `Elec: ${technicalData.elec.alimentation} - ${visite?.kva || '?'} kVA`,
+                `> ETUDE & SOLUTION (Bureau)`,
+                `Surface : ${s}m² | T° : ${visite?.temperatureSouhaitee || '?'}°C`,
+                `Isolation : ${visite?.typeIsolation || '?'} | Radiateurs : ${visite?.typeRadiateurs || '?'}`,
+                `SOLUTION ESTIMÉE : PAC ${solutionEstimee}`,
+                ``,
+                `> INFO CHANTIER (Installateur)`,
+                `Accès : ${liaison?.typeEscalier || '?'} (${liaison?.largeurEscalier || '?'}cm) | Portes: ${liaison?.largeurPorte}cm`,
+                `Liaison Frigo : ${liaison?.distance || '?'}m`,
+                `Emplacement Ext : ${visite?.emplacementPacExterieur || '?'}`,
+                `Elec : ${technicalData.elec.alimentation?.toUpperCase()} (${visite?.kva || '?'} kVA)`,
                 `[FIN VISITE]`
               ];
 

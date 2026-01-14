@@ -34,7 +34,12 @@ export default async function handler(req, res) {
         if (date_fin) params.append('date_fin', date_fin);
 
         // Comments
-        if (comment) params.append('commentaire', comment);
+        // Comments (On envoie sur plusieurs champs potentiels pour être sûr que ça passe)
+        if (comment) {
+            params.append('commentaire', comment);
+            params.append('notes', comment);
+            params.append('message', comment);
+        }
 
         // Extra fields (dynamic mapping)
         if (extras && typeof extras === 'object') {

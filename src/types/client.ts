@@ -51,6 +51,7 @@ export interface Client {
       videoTableauElectrique: boolean;
       videoChaudiere: boolean;
     };
+    qhare_info?: any;
   };
 }
 

@@ -38,6 +38,16 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
     suivi: 'Suivi',
   };
 
+  const renderQhareField = (label: string, value: any) => {
+    if (value === undefined || value === null || value === '') return null;
+    return (
+      <div className="flex flex-col">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="font-medium text-foreground">{String(value)}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* En-tête */}
@@ -176,6 +186,52 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
               </div>
             </CardContent>
           </Card>
+
+          {/* Informations Complémentaires (Qhare) */}
+          {client.technicalData?.qhare_info && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Détails Importés (Qhare)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Section Avis d'Imposition */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Avis d'Imposition</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {renderQhareField("Numéro Fiscal 1", client.technicalData.qhare_info.numero_fiscal_1 || client.technicalData.qhare_info.num_fiscal_1)}
+                    {renderQhareField("Ref. Avis 1", client.technicalData.qhare_info.reference_avis_1 || client.technicalData.qhare_info.ref_avis_1)}
+                    {renderQhareField("RFR 1", client.technicalData.qhare_info.revenu_fiscal_reference_1 || client.technicalData.qhare_info.rfr_1)}
+                    {renderQhareField("Nb Parts", client.technicalData.qhare_info.nombre_parts || client.technicalData.qhare_info.nb_parts)}
+                    {renderQhareField("Précarité", client.technicalData.qhare_info.precarite)}
+                    {renderQhareField("MaPrimeRenov", client.technicalData.qhare_info.maprimerenov)}
+                  </div>
+                </div>
+
+                {/* Section Logement */}
+                <div className="space-y-2 pt-2 border-t">
+                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Logement</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {renderQhareField("Propriétaire ?", client.technicalData.qhare_info.proprietaire)}
+                    {renderQhareField("Occupant ?", client.technicalData.qhare_info.proprietaire_occupant)}
+                    {renderQhareField("Type Maison", client.technicalData.qhare_info.type_maison)}
+                    {renderQhareField("Année Construction", client.technicalData.qhare_info.annee_construction)}
+                    {renderQhareField("Surface Habitable", client.technicalData.qhare_info.surface_habitable)}
+                    {renderQhareField("Mode Chauffage", client.technicalData.qhare_info.mode_chauffage || client.technicalData.qhare_info.chauffage)}
+                  </div>
+                </div>
+
+                {/* Debug / Fallback pour tout voir si les clés ne matchent pas */}
+                <div className="pt-2 border-t">
+                  <details className="text-xs text-muted-foreground">
+                    <summary className="cursor-pointer hover:text-primary">Voir toutes les données brutes</summary>
+                    <pre className="mt-2 p-2 bg-muted rounded overflow-auto max-h-40">
+                      {JSON.stringify(client.technicalData.qhare_info, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Détails du chantier */}
           <Card>

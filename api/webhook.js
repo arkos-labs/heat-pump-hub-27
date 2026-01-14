@@ -50,13 +50,22 @@ export default async function handler(req, res) {
                 existingClient = foundByEmail;
             }
 
+            // Préparation des données Qhare complètes pour stockage
+            const qhareInfo = data;
+
             let resultData;
 
             if (existingClient) {
                 console.log("Client existant trouvé (ID Supabase:", existingClient.id, ") -> Mise à jour...");
 
-                // Préparer l'objet d'update (On ne touche PAS au statut sauf si on veut le forcer, 
-                // mais ici on veut surtout éviter de créer des doublons 'nouveau')
+                // On fusionne avec les technical_data existants pour ne pas perdre l'audit
+                const currentTechnicalData = existingClient.technical_data || {};
+                const newTechnicalData = {
+                    ...currentTechnicalData,
+                    qhare_info: qhareInfo // On stocke toutes les raw datas de Qhare ici
+                };
+
+                // Préparer l'objet d'update
                 const clientToUpdate = {
                     nom: data.nom || data.lastname || existingClient.nom,
                     prenom: data.prenom || data.firstname || existingClient.prenom,
@@ -65,8 +74,7 @@ export default async function handler(req, res) {
                     adresse: data.adresse || data.address || existingClient.adresse,
                     ville: data.ville || data.city || existingClient.ville,
                     code_postal: data.code_postal || data.zipcode || existingClient.code_postal,
-                    // On ne met PAS à jour le statut, on garde celui en cours (sauf logique spécifique)
-                    // status: existingClient.status 
+                    technical_data: newTechnicalData
                 };
 
                 const { data: updatedData, error: updateError } = await supabase
@@ -91,8 +99,11 @@ export default async function handler(req, res) {
                     ville: data.ville || data.city || null,
                     code_postal: data.code_postal || data.zipcode || null,
                     source: 'qhare',
-                    status: 'nouveau', // Nouveau par défaut
-                    notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`
+                    status: 'nouveau',
+                    notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`,
+                    technical_data: {
+                        qhare_info: qhareInfo // Stockage initial
+                    }
                 };
 
                 const { data: insertedData, error: insertError } = await supabase

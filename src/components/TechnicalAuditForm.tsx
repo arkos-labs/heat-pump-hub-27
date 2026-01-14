@@ -74,6 +74,8 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
     // Helpers existants (simplifiés pour l'exemple, à garder si besoin)
     const updateElec = (field: any, value: any) => setFormData(p => ({ ...p, elec: { ...p.elec, [field]: value } }));
     const updateLiaison = (field: any, value: any) => setFormData(p => ({ ...p, liaison: { ...p.liaison, [field]: value } }));
+    const updateBallons = (field: any, value: any) => setFormData(p => ({ ...p, ballons: { ...p.ballons, [field]: value } }));
+    const updateAudit = (field: any, value: any) => setFormData(p => ({ ...p, audit: { ...p.audit, [field]: value } }));
 
 
     return (
@@ -254,50 +256,71 @@ export function TechnicalAuditForm({ client, onSave }: TechnicalAuditFormProps) 
             <Card className="border-primary/50 bg-primary/5">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary">
-                        🎯 Solutions Préconisées (Estimation)
+                        🎯 Solutions Préconisées (Règle Mètres Carrés)
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     {(() => {
                         const s = formData.visite?.surfaceChauffee || 0;
-                        const hsp = formData.liaison?.hauteurSousPlafond || 2.5;
-                        const volume = s * hsp;
-                        // Règle pouce simple: 45W/m3 pour isolation moyenne
-                        const puissanceRecommandee = (volume * 45) / 1000; // kW
 
                         let modele = "";
-                        if (puissanceRecommandee < 7) modele = "PAC 6kW";
-                        else if (puissanceRecommandee < 9) modele = "PAC 8kW";
-                        else if (puissanceRecommandee < 11) modele = "PAC 10kW";
-                        else if (puissanceRecommandee < 13) modele = "PAC 12kW";
-                        else if (puissanceRecommandee < 15) modele = "PAC 14kW";
-                        else modele = "PAC 16kW+ (Étude approfondie requise)";
+                        let puissanceDetails = "";
 
-                        const alim = formData.elec?.alimentation === 'monophase' ? 'Monophasé' : 'Triphasé';
-                        const compatible = (alim === 'monophase' && puissanceRecommandee > 14) ? "⚠️ Attention: Triphasé recommandé > 14kW" : "✅ Compatible";
+                        // Règles spécifiques fournies
+                        if (s < 80) {
+                            modele = "PAC 6-8 kW (Surface < 80m²)";
+                            puissanceDetails = "Petite surface, vérifier isolation.";
+                        }
+                        else if (s >= 80 && s < 100) {
+                            modele = "PAC 10 kW";
+                            puissanceDetails = "Pour maison 80-100m² (bien isolée).";
+                        }
+                        else if (s >= 100 && s < 120) {
+                            modele = "PAC 12 kW";
+                            puissanceDetails = "Pour maison 100-120m².";
+                        }
+                        else if (s >= 120 && s < 140) {
+                            modele = "PAC 14 kW";
+                            puissanceDetails = "Pour maison 120-140m².";
+                        }
+                        else if (s >= 140 && s <= 170) {
+                            modele = "PAC 16 kW";
+                            puissanceDetails = "Pour maison 140-170m².";
+                        }
+                        else {
+                            modele = "PAC > 16 kW (Étude sur mesure requise)";
+                            puissanceDetails = "Grandes surfaces > 170m².";
+                        }
 
-                        if (s === 0) return <p className="text-sm text-muted-foreground">Renseignez la surface pour voir l'estimation.</p>;
+                        const alim = formData.elec?.alimentation === 'monophase' ? 'Compteur Monophasé' : 'Compteur Triphasé';
+                        const noteElec = "⚠️ Vérifier compatibilité compteur (La PAC existe en Mono & Tri)";
+
+                        if (s === 0) return <p className="text-sm text-muted-foreground">Renseignez la surface pour voir la préconisation.</p>;
 
                         return (
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center bg-background p-3 rounded-lg border">
-                                    <span className="font-medium">Puissance Estimée :</span>
-                                    <span className="text-xl font-bold">{puissanceRecommandee.toFixed(1)} kW</span>
+                                    <span className="font-medium">Surface Renseignée :</span>
+                                    <span className="text-xl font-bold">{s} m²</span>
                                 </div>
                                 <div className="bg-background p-4 rounded-lg border border-primary/20">
                                     <p className="text-sm text-muted-foreground mb-1">Modèle suggéré :</p>
-                                    <p className="text-lg font-bold text-primary">
-                                        {modele}
-                                    </p>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className="text-sm font-medium">{alim}</span>
-                                        <Badge variant={compatible.includes('Attention') ? "destructive" : "secondary"}>
-                                            {compatible}
-                                        </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-2xl font-bold text-primary">{modele}</p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                        *Calcul théorique (Vol x 45W/m3). À valider par le bureau d'études.
-                                    </p>
+                                    <p className="text-sm italic text-muted-foreground mt-1">{puissanceDetails}</p>
+
+                                    <div className="flex flex-col gap-1 mt-3 pt-3 border-t">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium">Installation électrique :</span>
+                                            <Badge variant="outline" className="bg-primary/10">
+                                                {alim}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                                            {noteElec}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         );

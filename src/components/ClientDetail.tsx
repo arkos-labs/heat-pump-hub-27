@@ -209,7 +209,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                     {renderQhareField("Email MPR", client.technicalData.qhare_info.email_mpr)}
                     {renderQhareField("Mot de Passe MPR", client.technicalData.qhare_info.mot_de_passe_mpr || client.technicalData.qhare_info.mdp_mpr)}
                     {renderQhareField("N° Dossier MPR", client.technicalData.qhare_info.numero_dossier_mpr || client.technicalData.qhare_info.num_dossier_mpr)}
-                    {renderQhareField("Zone Action Logement", client.technicalData.qhare_info.zone_action_logement)}
+                    {renderQhareField("Zone (H1/H2/H3)", client.technicalData.qhare_info.zone)}
                   </div>
                 </div>
 
@@ -228,7 +228,7 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                     {renderQhareField("Personnes Foyer", client.technicalData.qhare_info.nombre_personnes || client.technicalData.qhare_info.personnes_foyer)}
 
                     {renderQhareField("Précarité", client.technicalData.qhare_info.precarite)}
-                    {renderQhareField("MaPrimeRenov", client.technicalData.qhare_info.maprimerenov)}
+                    {renderQhareField("MaPrimeRenov", client.technicalData.qhare_info.couleur_mpr || client.technicalData.qhare_info.maprimerenov)}
                   </div>
                 </div>
 
@@ -259,15 +259,17 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                   </div>
                 </div>
 
-                {/* Debug / Fallback pour tout voir si les clés ne matchent pas */}
-                <div className="pt-2 border-t mt-2">
-                  <details className="text-xs text-muted-foreground" open>
-                    <summary className="cursor-pointer hover:text-primary">Voir données brutes (Debug)</summary>
-                    <pre className="mt-2 p-2 bg-muted rounded overflow-auto max-h-40">
-                      {JSON.stringify(client.technicalData.qhare_info, null, 2)}
-                    </pre>
-                  </details>
-                </div>
+                {/* 4. CHAMPS PERSONNALISES (Si disponibles) */}
+                {client.technicalData.qhare_info.champs_perso && client.technicalData.qhare_info.champs_perso.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-dashed">
+                    <h5 className="text-xs font-bold text-muted-foreground uppercase mb-2">Champs Personnalisés</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2 text-sm">
+                      {client.technicalData.qhare_info.champs_perso.map((champ: any, idx: number) => (
+                        renderQhareField(champ.nom || champ.name || champ.variable, champ.valeur || champ.value)
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -464,6 +466,6 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
           />
         </TabsContent> */}
       </Tabs>
-    </div>
+    </div >
   );
 }

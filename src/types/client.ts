@@ -4,7 +4,7 @@ export interface Appointment {
   id: string;
   date: string;
   time: string;
-  type: 'installation';
+  type: 'installation' | 'visite_technique' | 'suivi';
   status?: 'planifie' | 'termine' | 'annule';
   notes?: string;
 }

@@ -418,9 +418,9 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">BtoC</h1>
+                <h1 className="text-2xl font-bold text-foreground">Tableau de bord</h1>
                 <p className="text-sm text-muted-foreground">
-                  Vue d'ensemble des activités
+                  Vue d'ensemble de vos installations et rendez-vous.
                 </p>
               </div>
             </div>

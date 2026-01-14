@@ -1,4 +1,4 @@
-import { Users, Calendar, Phone, Home } from "lucide-react";
+import { Users, Calendar, Phone, Home, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -8,7 +8,7 @@ export function Sidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   const menuItems = [
-    { icon: Home, label: "BtoC", path: "/" },
+    { icon: LayoutDashboard, label: "Tableau de bord", path: "/" },
     { icon: Phone, label: "Clients à contacter", path: "/clients-a-contacter" },
     { icon: Calendar, label: "Agendas", path: "/agenda" },
   ];

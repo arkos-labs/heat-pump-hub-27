@@ -23,7 +23,7 @@ export function DashboardStats({ clients }: DashboardStatsProps) {
       bg: 'bg-accent/10',
     },
     {
-      label: 'En cours',
+      label: 'Installations en cours',
       value: clients.filter((c) => c.status === 'en_cours').length,
       icon: Wrench,
       color: 'text-warning',

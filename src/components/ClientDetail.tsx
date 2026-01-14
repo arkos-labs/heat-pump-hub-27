@@ -295,37 +295,40 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
               const formatBool = (val: boolean) => val ? 'Oui' : 'Non';
               const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+              // Extraction ID Qhare pour le titre
+              const qhareIdMatch = (client.notes || '').match(/ID Qhare:\s*([a-zA-Z0-9-]+)/);
+              const qhareId = qhareIdMatch ? qhareIdMatch[1] : 'Non défini';
+
+              // Logique de présence des vidéos
+              const videosManquantes = [];
+              if (!technicalData.audit.videoTableauElectrique) videosManquantes.push("Absence de la vidéo du tableau électrique.");
+              if (!technicalData.audit.videoChaudiere) videosManquantes.push("Absence de la vidéo de la chaudière existante.");
+              const statutDocs = videosManquantes.length === 0 ? "Complet" : "Incomplet";
+
               const summary = `
-📋 DÉTAILS AUDIT TECHNIQUE
-===========================
+Rapport d'Audit Technique — ID Qhare : ${qhareId}
 
-1️⃣ LIAISON ET UNITÉ INTÉRIEURE (PAC)
---------------------------------------
-• Distance de liaison : ${formatValue(technicalData.liaison.distance, 'm')}
-• Hauteur sous plafond : ${formatValue(technicalData.liaison.hauteurSousPlafond, 'm')}
-• Largeur de porte : ${formatValue(technicalData.liaison.largeurPorte, 'cm')}
-• Type d'escalier : ${technicalData.liaison.typeEscalier}
+1. Implantation et Accessibilité (Unité Intérieure)
+Liaison frigorifique : ${formatValue(technicalData.liaison.distance, ' mètres')}
+Contraintes d'espace : Hauteur sous plafond relevée : ${formatValue(technicalData.liaison.hauteurSousPlafond, ' m')}
+Largeur de passage (porte) : ${formatValue(technicalData.liaison.largeurPorte, ' cm')}
+Accès : ${technicalData.liaison.typeEscalier}
 
-2️⃣ GROUPE EXTÉRIEUR
-----------------------
-• Type de support : ${technicalData.groupeExterieur.typeSupport}
+2. Unité Extérieure
+Support : ${technicalData.groupeExterieur.typeSupport}
 
-3️⃣ BALLONS (SOLAIRE / ÉLECTRIQUE)
-----------------------------------
-• Type de ballon : ${technicalData.ballons.type}
-• Dist. Capteur - Ballon : ${formatValue(technicalData.ballons.distanceCapteurBallon, 'm')}
-• Dist. PAC - Ballon : ${formatValue(technicalData.ballons.distancePacBallon, 'm')}
-• Hauteur plafond requise : ${formatValue(technicalData.ballons.hauteurPlafondRequis, 'm')}
+3. Système de Production d'Eau Chaude
+Type de matériel : ${technicalData.ballons.type}
+Distances : Capteur-Ballon (${formatValue(technicalData.ballons.distanceCapteurBallon, 'm')}) / PAC-Ballon (${formatValue(technicalData.ballons.distancePacBallon, 'm')})
+Hauteur plafond requise : ${formatValue(technicalData.ballons.hauteurPlafondRequis, 'm')}
 
-4️⃣ ÉLECTRICITÉ & TOITURE
----------------------------
-• Alimentation : ${technicalData.elec.alimentation}
-• Couverture toiture : ${formatValue(technicalData.elec.typeCouverture)}
+4. Caractéristiques Électriques et Bâti
+Réseau : ${technicalData.elec.alimentation}
+Toiture : ${formatValue(technicalData.elec.typeCouverture)}
 
-5️⃣ AUDIT VIDÉO
------------------
-• Vidéo Tableau Élec : ${formatBool(technicalData.audit.videoTableauElectrique)}
-• Vidéo Chaudière : ${formatBool(technicalData.audit.videoChaudiere)}
+5. Documents et Justificatifs
+Statut : ${statutDocs}
+${videosManquantes.length > 0 ? videosManquantes.join('\n') : "Toutes les vidéos sont présentes."}
 `;
 
               let newNotes = client.notes || '';

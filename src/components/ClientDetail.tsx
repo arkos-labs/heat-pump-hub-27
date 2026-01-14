@@ -305,6 +305,25 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
                     </div>
                   </div>
                 )}
+
+                {/* 7. TOUT VOIR (DEBUG COMPLET - TEMPORAIRE) */}
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="text-sm font-bold text-red-500 mb-3 flex items-center gap-2">
+                    🕵️ TOUTES LES DONNÉES REÇUES (DEBUG)
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-2 text-xs font-mono bg-muted p-2 rounded">
+                    {Object.entries(client.technicalData.qhare_info).map(([key, val]) => {
+                      if (typeof val === 'object' && val !== null) return null; // Skip objects/arrays for now
+                      return (
+                        <div key={key} className="flex flex-col border-b pb-1">
+                          <span className="text-muted-foreground">{key}</span>
+                          <span className="font-bold break-all">{String(val)}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
               </CardContent>
             </Card>
           )}

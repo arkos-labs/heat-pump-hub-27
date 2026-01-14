@@ -24,30 +24,84 @@ export default async function handler(req, res) {
 
             // Mapping des données Qhare vers la structure de la table 'clients'
             // Note: On suppose que la table 'clients' existe et attend ces colonnes.
-            const clientToInsert = {
-                nom: data.nom || data.lastname || 'Inconnu',
-                prenom: data.prenom || data.firstname || '',
-                email: data.email || null,
-                telephone: data.telephone || data.phone || null,
-                adresse: data.adresse || data.address || null,
-                ville: data.ville || data.city || null,
-                code_postal: data.code_postal || data.zipcode || null, // Attention au nom de la colonne
-                source: 'qhare',
-                status: 'nouveau', // Statut par défaut
-                // Ajout des champs techniques si nécessaire ou stockage du raw data
-                notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`
-            };
+            // 1. Chercher si le client existe déjà (Via ID Qhare dans les notes OU Email)
+            const qhareId = data.id;
+            let existingClient = null;
 
-            // Insertion en base
-            const { data: insertedData, error } = await supabase
-                .from('clients')
-                .insert([clientToInsert])
-                .select();
+            if (qhareId) {
+                // Recherche par ID Qhare dans les notes
+                const { data: foundById } = await supabase
+                    .from('clients')
+                    .select('*')
+                    .ilike('notes', `%ID Qhare: ${qhareId}%`)
+                    .maybeSingle(); // Use maybeSingle to avoid error if not found
 
-            if (error) {
-                console.error('Erreur Supabase:', error);
-                // On renvoie quand même un 200 à Qhare pour ne pas bloquer sa queue, mais on loggue l'erreur
-                return res.status(200).json({ success: false, error: 'Erreur insertion DB', details: error.message });
+                existingClient = foundById;
+            }
+
+            if (!existingClient && data.email) {
+                // Fallback: Recherche par Email
+                const { data: foundByEmail } = await supabase
+                    .from('clients')
+                    .select('*')
+                    .eq('email', data.email)
+                    .maybeSingle();
+
+                existingClient = foundByEmail;
+            }
+
+            let resultData;
+
+            if (existingClient) {
+                console.log("Client existant trouvé (ID Supabase:", existingClient.id, ") -> Mise à jour...");
+
+                // Préparer l'objet d'update (On ne touche PAS au statut sauf si on veut le forcer, 
+                // mais ici on veut surtout éviter de créer des doublons 'nouveau')
+                const clientToUpdate = {
+                    nom: data.nom || data.lastname || existingClient.nom,
+                    prenom: data.prenom || data.firstname || existingClient.prenom,
+                    email: data.email || existingClient.email,
+                    telephone: data.telephone || data.phone || existingClient.telephone,
+                    adresse: data.adresse || data.address || existingClient.adresse,
+                    ville: data.ville || data.city || existingClient.ville,
+                    code_postal: data.code_postal || data.zipcode || existingClient.code_postal,
+                    // On ne met PAS à jour le statut, on garde celui en cours (sauf logique spécifique)
+                    // status: existingClient.status 
+                };
+
+                const { data: updatedData, error: updateError } = await supabase
+                    .from('clients')
+                    .update(clientToUpdate)
+                    .eq('id', existingClient.id)
+                    .select();
+
+                if (updateError) throw updateError;
+                resultData = updatedData;
+
+            } else {
+                console.log("Nouveau Client -> Insertion...");
+
+                // Insertion en base (Nouveau client)
+                const clientToInsert = {
+                    nom: data.nom || data.lastname || 'Inconnu',
+                    prenom: data.prenom || data.firstname || '',
+                    email: data.email || null,
+                    telephone: data.telephone || data.phone || null,
+                    adresse: data.adresse || data.address || null,
+                    ville: data.ville || data.city || null,
+                    code_postal: data.code_postal || data.zipcode || null,
+                    source: 'qhare',
+                    status: 'nouveau', // Nouveau par défaut
+                    notes: `Importé via Webhook. ID Qhare: ${data.id || 'N/A'}`
+                };
+
+                const { data: insertedData, error: insertError } = await supabase
+                    .from('clients')
+                    .insert([clientToInsert])
+                    .select();
+
+                if (insertError) throw insertError;
+                resultData = insertedData;
             }
 
             // --- AUTO-REPONSE QHARE: Passer en "À planifier" ---
@@ -66,7 +120,7 @@ export default async function handler(req, res) {
                     const updateUrl = `https://qhare.fr/api/lead/update?${params.toString()}`;
                     console.log('Auto-Update Qhare (À planifier) ->', updateUrl.replace(ACCESS_TOKEN, 'HIDDEN'));
 
-                    // Appel non-bloquant (on n'attend pas forcément le résultat pour répondre au webhook)
+                    // Appel non-bloquant
                     fetch(updateUrl).then(r => r.json()).then(resQhare => {
                         console.log("Réponse Qhare Auto-Update:", resQhare);
                     }).catch(err => console.error("Erreur Auto-Update Qhare:", err));
@@ -79,8 +133,8 @@ export default async function handler(req, res) {
 
             return res.status(200).json({
                 success: true,
-                message: 'Client sauvegardé et accusé de réception envoyé (À planifier)',
-                client: insertedData
+                message: 'Client traité avec succès (Mise à jour ou Création)',
+                client: resultData
             });
         } catch (error) {
             console.error('Erreur script:', error);

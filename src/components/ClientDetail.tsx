@@ -305,54 +305,61 @@ export function ClientDetail({ client, onStatusChange, onAddRdv, onUpdateClient,
               if (!technicalData.audit.videoChaudiere) videosManquantes.push("Absence de la vidéo de la chaudière existante.");
               const statutDocs = videosManquantes.length === 0 ? "Complet" : "Incomplet";
 
-              const summary = `
-Rapport d'Audit Technique — ID Qhare : ${qhareId}
+              // Construction de la synthèse pour le format demandé
+              const videos = [];
+              if (!technicalData.audit.videoTableauElectrique) videos.push("Vidéo Tableau Manquante");
+              if (!technicalData.audit.videoChaudiere) videos.push("Vidéo Chaudière Manquante");
+              const videoStatus = videos.length > 0 ? `⚠️ ${videos.join(', ')}` : "Vidéos OK";
 
-1. Implantation et Accessibilité (Unité Intérieure)
-Liaison frigorifique : ${formatValue(technicalData.liaison.distance, ' mètres')}
-Contraintes d'espace : Hauteur sous plafond relevée : ${formatValue(technicalData.liaison.hauteurSousPlafond, ' m')}
-Largeur de passage (porte) : ${formatValue(technicalData.liaison.largeurPorte, ' cm')}
-Accès : ${technicalData.liaison.typeEscalier}
+              const observations = [
+                `Alim: ${technicalData.elec.alimentation}`,
+                `Toiture: ${technicalData.elec.typeCouverture || 'Non spécifiée'}`,
+                `Support Ext: ${technicalData.groupeExterieur.typeSupport}`,
+                `Liaison: ${technicalData.liaison.distance}m`,
+                videoStatus
+              ].join(' / ');
 
-2. Unité Extérieure
-Support : ${technicalData.groupeExterieur.typeSupport}
+              const todayStr = new Date().toLocaleDateString('fr-FR');
 
-3. Système de Production d'Eau Chaude
-Type de matériel : ${technicalData.ballons.type}
-Distances : Capteur-Ballon (${formatValue(technicalData.ballons.distanceCapteurBallon, 'm')}) / PAC-Ballon (${formatValue(technicalData.ballons.distancePacBallon, 'm')})
-Hauteur plafond requise : ${formatValue(technicalData.ballons.hauteurPlafondRequis, 'm')}
+              const summaryValues = [
+                `[AUDIT TECHNIQUE PAC - ${todayStr}]`,
+                `LOGEMENT : ${client.typeLogement === 'maison' ? 'Maison' : 'Appartement'} - ${client.surface}m²`,
+                `CHAUFFAGE : ${client.typeChauffageActuel}`,
+                `PAC PRÉCONISÉE : ${client.puissanceEstimee || '?'}kW - (Emetteurs existants)`,
+                `NOTES : ${observations}`,
+                `[FIN AUDIT]`
+              ];
 
-4. Caractéristiques Électriques et Bâti
-Réseau : ${technicalData.elec.alimentation}
-Toiture : ${formatValue(technicalData.elec.typeCouverture)}
-
-5. Documents et Justificatifs
-Statut : ${statutDocs}
-${videosManquantes.length > 0 ? videosManquantes.join('\n') : "Toutes les vidéos sont présentes."}
-`;
+              const newFormattedBlock = summaryValues.join('\n');
 
               let newNotes = client.notes || '';
-              const startMarker = "📋 DÉTAILS AUDIT TECHNIQUE";
-              const endMarker = "==========================="; // Just using the start as identifier is safer usually, but let's try to find the block.
 
-              // Simple replacement strategy: if we find the header, we assume the block goes until the next double newline or potentially the end. 
-              // To be safer and cleaner, let's wrap it in distinct markers.
+              // Définition des Anciens marqueurs pour compatibilité
+              const oldBlockStart = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
+              const oldBlockEnd = "--- ⬆️ FIN AUDIT ⬆️ ---";
 
-              const BLOCK_START = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
-              const BLOCK_END = "--- ⬆️ FIN AUDIT ⬆️ ---";
+              // Recherche des Nouveaux marqueurs (Regex car la date change)
+              const newBlockStartRegex = /\[AUDIT TECHNIQUE PAC - .*?\]/;
+              const newBlockEnd = "[FIN AUDIT]";
 
-              const formattedBlock = `${BLOCK_START}\n${summary}\n${BLOCK_END}`;
-
-              if (newNotes.includes(BLOCK_START) && newNotes.includes(BLOCK_END)) {
-                // Regex to replace everything between markers
-                const regex = new RegExp(`${escapeRegExp(BLOCK_START)}[\\s\\S]*?${escapeRegExp(BLOCK_END)}`);
-                newNotes = newNotes.replace(regex, formattedBlock);
-              } else {
-                // Append explicitly
-                newNotes = newNotes ? `${newNotes}\n\n${formattedBlock}` : formattedBlock;
+              // Cas 1: Remplacement d'un Ancien Bloc (Migration)
+              if (newNotes.includes(oldBlockStart) && newNotes.includes(oldBlockEnd)) {
+                const regexOld = new RegExp(`${escapeRegExp(oldBlockStart)}[\\s\\S]*?${escapeRegExp(oldBlockEnd)}`);
+                newNotes = newNotes.replace(regexOld, newFormattedBlock);
+              }
+              // Cas 2: Remplacement d'un Nouveau Bloc existant (Mise à jour)
+              else if (newBlockStartRegex.test(newNotes) && newNotes.includes(newBlockEnd)) {
+                const regexNew = /\[AUDIT TECHNIQUE PAC - .*?\][\s\S]*?\[FIN AUDIT\]/;
+                newNotes = newNotes.replace(regexNew, newFormattedBlock);
+              }
+              // Cas 3: Nouveau Bloc (Ajout)
+              else {
+                newNotes = newNotes ? `${newNotes}\n\n${newFormattedBlock}` : newFormattedBlock;
               }
 
               onUpdateClient({ ...client, technicalData, notes: newNotes });
+
+
             }}
           />
         </TabsContent>

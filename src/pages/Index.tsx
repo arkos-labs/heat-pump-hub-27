@@ -192,22 +192,30 @@ const Index = () => {
       toast.success("Informations sauvegardées");
 
       // SYNC AUDIT TO QHARE
-      const BLOCK_START = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
-      const BLOCK_END = "--- ⬆️ FIN AUDIT ⬆️ ---";
+      // SYNC AUDIT TO QHARE
+      const OLD_BLOCK_START = "--- ⬇️ AUDIT TECHNIQUE ⬇️ ---";
+      const OLD_BLOCK_END = "--- ⬆️ FIN AUDIT ⬆️ ---";
 
-      if (newNotes !== oldNotes && newNotes.includes(BLOCK_START)) {
-        // Extract the block
-        const regex = new RegExp(`${BLOCK_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${BLOCK_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
-        const match = newNotes.match(regex);
+      const NEW_BLOCK_START_REGEX = /\[AUDIT TECHNIQUE PAC - .*?\]/;
+      const NEW_BLOCK_END = "[FIN AUDIT]";
 
-        if (match) {
-          const auditBlock = match[0];
-          // We found the audit block, let's sync it as a comment
-          // Only sync if it's different or just always sync if present? 
-          // Safer to check if the audit specifically changed, but for now let's sync it.
-          // Note: Qhare might clear old comments or append. We hope it appends or handles it. 
-          // But usually we just want to post the new version.
+      if (newNotes !== oldNotes) {
+        let auditBlock = null;
 
+        // 1. Check New Format
+        if (NEW_BLOCK_START_REGEX.test(newNotes) && newNotes.includes(NEW_BLOCK_END)) {
+          const match = newNotes.match(/\[AUDIT TECHNIQUE PAC - .*?\][\s\S]*?\[FIN AUDIT\]/);
+          if (match) auditBlock = match[0];
+        }
+        // 2. Check Old Format (Fallback)
+        else if (newNotes.includes(OLD_BLOCK_START) && newNotes.includes(OLD_BLOCK_END)) {
+          // Extract the block
+          const regex = new RegExp(`${OLD_BLOCK_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${OLD_BLOCK_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+          const match = newNotes.match(regex);
+          if (match) auditBlock = match[0];
+        }
+
+        if (auditBlock) {
           await syncWithQhare(updatedClientData, undefined, undefined, undefined, auditBlock);
           toast.info("Audit technique envoyé à Qhare (Commentaires)");
         }

@@ -348,13 +348,13 @@ const Index = () => {
           params.append('end', isoEnd);
 
           // 2. Champs spécifiques CRM Français (souvent DD/MM/YYYY)
-          params.append('date_pose', frDate); // DD/MM/YYYY
+          params.append('date_pose', isoStart); // ISO YYYY-MM-DD HH:mm:ss for calendar timestamp
           params.append('date_rdv', frDateTime); // DD/MM/YYYY HH:mm
           params.append('date_rendez_vous', frDateTime);
           params.append('heure_rdv', frTime);
           params.append('heure_pose', frTime);
 
-          toast.info(`Qhare Sync: ${frDateTime} (FR)`);
+          toast.info(`Qhare Sync: Pose=${isoStart}`);
         } else {
           params.append('date_rdv', dates.date_rdv);
         }
@@ -442,8 +442,8 @@ const Index = () => {
       // const formattedDate = `${d}/${m}/${y}`; 
       // Qhare semble préférer YYYY-MM-DD (ISO) ou timestamps, essayons le format standard HTML
 
-      // SYNC QHARE: Sous-état -> Planifié (et non Planifier qui est l'action)
-      await syncWithQhare(selectedClient, undefined, 'Planifié', {
+      // SYNC QHARE: FORCE ETAT 'Pose' pour affichage Planning + Date ISO
+      await syncWithQhare(selectedClient, 'Pose', 'Planifié', {
         date_pose: rdvData.date, // YYYY-MM-DD
         date_rdv: `${rdvData.date} ${rdvData.time}:00`, // YYYY-MM-DD HH:mm:ss
         type_rdv: rdvData.type // ex: installation

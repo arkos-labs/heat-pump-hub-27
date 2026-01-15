@@ -256,7 +256,7 @@ const Index = () => {
     client: Client,
     etat: string | undefined,
     sous_etat: string | undefined,
-    dates?: { date_pose?: string, date_fin?: string },
+    dates?: { date_pose?: string, date_fin?: string, date_rdv?: string },
     comment?: string
   ) => {
     const qhareId = getQhareId(client);
@@ -299,6 +299,7 @@ const Index = () => {
       // Dates
       if (dates?.date_pose) params.append('date_pose', dates.date_pose);
       if (dates?.date_fin) params.append('date_fin', dates.date_fin);
+      if (dates?.date_rdv) params.append('date_rdv', dates.date_rdv);
 
       // Extras Mapping
       params.append('surface_habitable', client.surface ? client.surface.toString() : '');
@@ -383,7 +384,8 @@ const Index = () => {
       // Qhare semble préférer YYYY-MM-DD (ISO) ou timestamps, essayons le format standard HTML
 
       await syncWithQhare(selectedClient, undefined, 'Planifier', {
-        date_pose: rdvData.date // Déjà YYYY-MM-DD
+        date_pose: rdvData.date, // YYYY-MM-DD
+        date_rdv: `${rdvData.date} ${rdvData.time}:00` // YYYY-MM-DD HH:mm:ss
       });
 
     } catch (error) {

@@ -377,12 +377,13 @@ const Index = () => {
       await clientService.addAppointment(selectedClient.id, newRdv);
       toast.success("Rendez-vous planifié");
 
-      // SYNC QHARE: Sous-état -> Planifier + DATE POSE (Format JJ/MM/AAAA pour être sûr)
-      const [y, m, d] = rdvData.date.split('-');
-      const formattedDate = `${d}/${m}/${y}`;
+      // SYNC QHARE: Sous-état -> Planifier + DATE POSE (Format YYYY-MM-DD standard API)
+      // const [y, m, d] = rdvData.date.split('-');
+      // const formattedDate = `${d}/${m}/${y}`; 
+      // Qhare semble préférer YYYY-MM-DD (ISO) ou timestamps, essayons le format standard HTML
 
       await syncWithQhare(selectedClient, undefined, 'Planifier', {
-        date_pose: formattedDate
+        date_pose: rdvData.date // Déjà YYYY-MM-DD
       });
 
     } catch (error) {

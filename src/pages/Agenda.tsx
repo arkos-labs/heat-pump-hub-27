@@ -215,6 +215,48 @@ export default function Agenda() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* UPCOMING APPOINTMENTS LIST */}
+                    <Card className="mt-6 border-none shadow-md bg-card/50 backdrop-blur-sm">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Prochains Rendez-vous</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="divide-y">
+                                {appointments
+                                    .filter(app => {
+                                        const d = safeParseDate(app.date);
+                                        return d && d >= new Date(new Date().setHours(0, 0, 0, 0));
+                                    })
+                                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                                    .slice(0, 5)
+                                    .map(app => (
+                                        <div
+                                            key={app.id}
+                                            className="p-3 hover:bg-muted/50 cursor-pointer transition-colors flex items-center gap-3"
+                                            onClick={() => {
+                                                const d = safeParseDate(app.date);
+                                                if (d) setDate(d);
+                                            }}
+                                        >
+                                            <div className="bg-primary/10 text-primary font-bold text-center px-2 py-1 rounded min-w-[50px]">
+                                                <div className="text-xs uppercase">{format(safeParseDate(app.date)!, 'MMM', { locale: fr })}</div>
+                                                <div className="text-lg leading-none">{format(safeParseDate(app.date)!, 'dd')}</div>
+                                            </div>
+                                            <div className="overflow-hidden">
+                                                <p className="font-semibold truncate text-sm">{app.clientName}</p>
+                                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                    <Clock className="h-3 w-3" /> {app.time} • {app.clientCity}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                {appointments.length === 0 && (
+                                    <div className="p-4 text-center text-sm text-muted-foreground">Aucun RDV à venir.</div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Appointments List */}
@@ -317,23 +359,25 @@ export default function Agenda() {
             </div>
 
             {/* Client Detail Section */}
-            {selectedDetailClient && (
-                <div className="mt-12 border-t pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold">Fiche Client : {selectedDetailClient.prenom} {selectedDetailClient.nom}</h2>
-                        <Button variant="outline" onClick={() => setSelectedDetailClient(null)}>Fermer</Button>
+            {
+                selectedDetailClient && (
+                    <div className="mt-12 border-t pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold">Fiche Client : {selectedDetailClient.prenom} {selectedDetailClient.nom}</h2>
+                            <Button variant="outline" onClick={() => setSelectedDetailClient(null)}>Fermer</Button>
+                        </div>
+                        <div className="bg-card rounded-xl border shadow-sm p-6">
+                            <ClientDetail
+                                client={selectedDetailClient}
+                                onStatusChange={handleStatusChange}
+                                onUpdateClient={handleUpdateClient}
+                                onAddRdv={() => toast.info("Pour ajouter un RDV, passez par le tableau de bord.")}
+                                onSimulateJourJ={() => toast.info("Simulation disponible sur le tableau de bord.")}
+                            />
+                        </div>
                     </div>
-                    <div className="bg-card rounded-xl border shadow-sm p-6">
-                        <ClientDetail
-                            client={selectedDetailClient}
-                            onStatusChange={handleStatusChange}
-                            onUpdateClient={handleUpdateClient}
-                            onAddRdv={() => toast.info("Pour ajouter un RDV, passez par le tableau de bord.")}
-                            onSimulateJourJ={() => toast.info("Simulation disponible sur le tableau de bord.")}
-                        />
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

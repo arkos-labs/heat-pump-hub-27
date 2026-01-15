@@ -272,18 +272,24 @@ const Index = () => {
     const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
     const TARGET_URL = 'https://qhare.fr/api/lead/update';
 
-    // Modifié pour utiliser POST (Standard pour updates)
-    // GET renvoyait 404 pour l'endpoint update qui attend probablement un body
+    // Modifié pour utiliser POST avec paramètres dans l'URL ET dans le Body
+    // ("Ceinture et bretelles" pour forcer la compatibilité avec certaines API PHP)
     const sendRequest = async (bodyParams: URLSearchParams) => {
       try {
-        console.log(`[Sync Qhare] POST Request to ${TARGET_URL}`);
+        const queryString = bodyParams.toString();
+        // On attache aussi les params à l'URL, au cas où le serveur ignorerait le body en POST
+        const url = `${TARGET_URL}?${queryString}`;
 
-        const res = await fetch(TARGET_URL, {
+        console.log(`[Sync Qhare] POST Request to ${url}`);
+
+        const res = await fetch(url, {
           method: 'POST',
           headers: {
+            // On laisse le navigateur gérer le Content-Type si on ne met rien ou on force x-www-form-urlencoded
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
           },
+          // On envoie aussi dans le body
           body: bodyParams
         });
         const json = await res.json();

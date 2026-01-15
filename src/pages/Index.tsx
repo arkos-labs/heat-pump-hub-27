@@ -616,6 +616,17 @@ const Index = () => {
           onOpenChange={setShowAddRdv}
           onAdd={handleAddRdv}
           clientName={`${selectedClient.prenom} ${selectedClient.nom}`}
+          currentClientZip={selectedClient.codePostal}
+          allAppointments={clients.flatMap(c =>
+            (c.rdvs || [])
+              .filter(r => r.type === 'installation') // On ne regarde que les installations pour grouper ? Ou tout ? Disons installations pour l'instant ou tout. L'utilisateur a dit "quand je veut placer un client pour son instalation".
+              // Mais s'il y a une visite technique à côté, c'est bien aussi. Gardons tout.
+              .map(r => ({
+                date: r.date,
+                clientZip: c.codePostal,
+                clientName: c.nom
+              }))
+          )}
         />
       )}
     </div>

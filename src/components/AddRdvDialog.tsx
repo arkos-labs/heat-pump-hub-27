@@ -11,18 +11,26 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Appointment } from '@/types/client';
 
+interface SimplifiedAppointment {
+  date: string;
+  clientZip: string;
+  clientName: string;
+}
+
 interface AddRdvDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (rdv: Omit<Appointment, 'id'>) => void;
   clientName: string;
+  currentClientZip?: string;
+  allAppointments?: SimplifiedAppointment[];
 }
 
-export function AddRdvDialog({ open, onOpenChange, onAdd, clientName }: AddRdvDialogProps) {
+export function AddRdvDialog({ open, onOpenChange, onAdd, clientName, currentClientZip = '', allAppointments = [] }: AddRdvDialogProps) {
   const [formData, setFormData] = useState<{
     date: string;
     time: string;
-    type: 'installation';
+    type: 'installation' | 'visite_technique' | 'suivi';
     notes: string;
   }>({
     date: '',
@@ -31,9 +39,27 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName }: AddRdvDi
     notes: '',
   });
 
+  // LOGIQUE D'OPTIMISATION DE TOURNEE
+  // On cherche des RDV existants dans le même secteur (2 premiers chiffres du Code Postal)
+  const suggestions = allAppointments.filter(rdv => {
+    if (!currentClientZip || !rdv.clientZip || !rdv.date) return false;
+
+    const targetDept = currentClientZip.substring(0, 2);
+    const rdvDept = rdv.clientZip.substring(0, 2);
+
+    // On ne suggère que les dates futures ou aujourd'hui
+    const isFuture = new Date(rdv.date) >= new Date(new Date().setHours(0, 0, 0, 0));
+
+    return targetDept === rdvDept && isFuture;
+  }).slice(0, 3); // On garde les 3 plus proches
+
+  const handleSelectSuggestion = (date: string) => {
+    setFormData({ ...formData, date });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(formData);
+    onAdd(formData as any);
     setFormData({
       date: '',
       time: '09:00',
@@ -50,6 +76,28 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName }: AddRdvDi
           <DialogTitle>Nouveau RDV - {clientName}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* OPTIMISATION VISUELLE */}
+          {suggestions.length > 0 && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-3 text-sm mb-2">
+              <p className="font-semibold text-green-800 flex items-center gap-1">
+                🌱 Optimisation Tournée (Même secteur) :
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {suggestions.map((s, i) => (
+                  <div
+                    key={i}
+                    onClick={() => handleSelectSuggestion(s.date)}
+                    className="cursor-pointer bg-white border border-green-300 px-2 py-1 rounded text-green-700 hover:bg-green-100 transition-colors text-xs"
+                  >
+                    📅 {new Date(s.date).toLocaleDateString('fr-FR')} <br />
+                    (Avec {s.clientName} - {s.clientZip})
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="date">Date</Label>

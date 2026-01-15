@@ -303,17 +303,39 @@ const Index = () => {
 
       if (dates?.date_rdv) {
         // format input: YYYY-MM-DD HH:mm:ss
-        const isoParts = dates.date_rdv.split(/[- :]/); // splits "2025-01-20 09:00:00"
+        const isoParts = dates.date_rdv.split(/[- :]/);
         if (isoParts.length >= 5) {
           const [y, m, d, h, min] = isoParts;
-          const isoStr = `${y}-${m}-${d} ${h}:${min}:00`;
-          const frStr = `${d}/${m}/${y} ${h}:${min}`; // DD/MM/YYYY HH:mm
 
-          // Qhare fields guessing based on common field names
-          params.append('date_rdv', isoStr);
-          params.append('date_rendez_vous', frStr); // Essayons format FR sur autre champ potentiel
-          params.append('date_rappel', isoStr); // Parfois considéré comme un rappel
-          params.append('date_start', isoStr);
+          // Create Date objects to compute End Date (+2 hours duration default)
+          const startDateObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d), parseInt(h), parseInt(min));
+          const endDateObj = new Date(startDateObj);
+          endDateObj.setHours(endDateObj.getHours() + 2);
+
+          const formatISO = (date: Date) => {
+            const yy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mi = String(date.getMinutes()).padStart(2, '0');
+            return `${yy}-${mm}-${dd} ${hh}:${mi}:00`;
+          };
+
+          const isoStart = formatISO(startDateObj);
+          const isoEnd = formatISO(endDateObj);
+
+          // Brute force mapping
+          params.append('date_rdv', isoStart);
+          params.append('date_rendez_vous', isoStart);
+
+          // Start/End pairs usually required for calendars
+          params.append('date_start', isoStart);
+          params.append('date_end', isoEnd);
+
+          params.append('start', isoStart);
+          params.append('end', isoEnd);
+
+          toast.info(`Synchro RDV: Début=${isoStart} / Fin=${isoEnd}`);
         } else {
           params.append('date_rdv', dates.date_rdv);
         }

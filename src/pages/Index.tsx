@@ -256,7 +256,7 @@ const Index = () => {
     client: Client,
     etat: string | undefined,
     sous_etat: string | undefined,
-    dates?: { date_pose?: string, date_fin?: string, date_rdv?: string },
+    dates?: { date_pose?: string, date_fin?: string, date_rdv?: string, type_rdv?: string },
     comment?: string
   ) => {
     const qhareId = getQhareId(client);
@@ -300,6 +300,7 @@ const Index = () => {
       // Dates handling - Brute force formats & fields to ensure calendar sync
       if (dates?.date_pose) params.append('date_pose', dates.date_pose);
       if (dates?.date_fin) params.append('date_fin', dates.date_fin);
+      if (dates?.type_rdv) params.append('type_rdv', dates.type_rdv); // Add type_rdv param
 
       if (dates?.date_rdv) {
         // format input: YYYY-MM-DD HH:mm:ss
@@ -423,9 +424,11 @@ const Index = () => {
       // const formattedDate = `${d}/${m}/${y}`; 
       // Qhare semble préférer YYYY-MM-DD (ISO) ou timestamps, essayons le format standard HTML
 
-      await syncWithQhare(selectedClient, undefined, 'Planifier', {
+      // SYNC QHARE: Sous-état -> Planifié (et non Planifier qui est l'action)
+      await syncWithQhare(selectedClient, undefined, 'Planifié', {
         date_pose: rdvData.date, // YYYY-MM-DD
-        date_rdv: `${rdvData.date} ${rdvData.time}:00` // YYYY-MM-DD HH:mm:ss
+        date_rdv: `${rdvData.date} ${rdvData.time}:00`, // YYYY-MM-DD HH:mm:ss
+        type_rdv: rdvData.type // ex: installation
       });
 
     } catch (error) {

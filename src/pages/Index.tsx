@@ -297,9 +297,27 @@ const Index = () => {
       if (sous_etat !== undefined) params.append('sous_etat', sous_etat);
 
       // Dates
+      // Dates handling - Brute force formats & fields to ensure calendar sync
       if (dates?.date_pose) params.append('date_pose', dates.date_pose);
       if (dates?.date_fin) params.append('date_fin', dates.date_fin);
-      if (dates?.date_rdv) params.append('date_rdv', dates.date_rdv);
+
+      if (dates?.date_rdv) {
+        // format input: YYYY-MM-DD HH:mm:ss
+        const isoParts = dates.date_rdv.split(/[- :]/); // splits "2025-01-20 09:00:00"
+        if (isoParts.length >= 5) {
+          const [y, m, d, h, min] = isoParts;
+          const isoStr = `${y}-${m}-${d} ${h}:${min}:00`;
+          const frStr = `${d}/${m}/${y} ${h}:${min}`; // DD/MM/YYYY HH:mm
+
+          // Qhare fields guessing based on common field names
+          params.append('date_rdv', isoStr);
+          params.append('date_rendez_vous', frStr); // Essayons format FR sur autre champ potentiel
+          params.append('date_rappel', isoStr); // Parfois considéré comme un rappel
+          params.append('date_start', isoStr);
+        } else {
+          params.append('date_rdv', dates.date_rdv);
+        }
+      }
 
       // Extras Mapping
       params.append('surface_habitable', client.surface ? client.surface.toString() : '');

@@ -347,14 +347,19 @@ const Index = () => {
           params.append('start', isoStart);
           params.append('end', isoEnd);
 
-          // 2. Champs spécifiques CRM Français (souvent DD/MM/YYYY)
-          params.append('date_pose', isoStart); // ISO YYYY-MM-DD HH:mm:ss for calendar timestamp
-          params.append('date_rdv', frDateTime); // DD/MM/YYYY HH:mm
-          params.append('date_rendez_vous', frDateTime);
-          params.append('heure_rdv', frTime);
-          params.append('heure_pose', frTime);
+          // 3. STRATÉGIE MIXTE (La plus robuste pour les vieux CRM PHP)
+          // date_pose = Date seule au format FR (DD/MM/YYYY)
+          // heure_pose = Heure seule (HH:mm)
+          // date_rdv = Timestamp complet ISO pour les systèmes récents
 
-          toast.info(`Qhare Sync: Pose=${isoStart}`);
+          params.append('date_pose', frDate); // DD/MM/YYYY (Date seule !)
+          params.append('heure_pose', frTime); // HH:mm
+          params.append('heure_rdv', frTime);
+
+          params.append('date_rdv', isoStart); // YYYY-MM-DD HH:mm:ss
+          params.append('date_rendez_vous', isoStart);
+
+          toast.info(`Qhare: Pose=${frDate} ${frTime} (Mixte)`);
         } else {
           params.append('date_rdv', dates.date_rdv);
         }

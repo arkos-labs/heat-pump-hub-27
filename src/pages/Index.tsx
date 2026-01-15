@@ -261,77 +261,81 @@ const Index = () => {
   ) => {
     const qhareId = getQhareId(client);
 
-    if (!qhareId) {
-      // Silent fail for comment sync if ID is missing might be better than error toast to avoid spamming
-      // But user wants to know.
-      // toast.error("Synchro Qhare impossible : ID introuvable.");
-      return;
-    }
+    if (!qhareId) return;
 
     // Sécurité: Vérifier que c'est bien des chiffres
     if (!/^\d+$/.test(qhareId)) {
       console.error("ID Invalide detecté:", qhareId);
-      // toast.error(`ID Qhare invalide : "${qhareId}".`);
       return;
     }
 
-    try {
-      // Extraction des champs à mapper vers Qhare
-      const extras = {
-        surface_habitable: client.surface ? client.surface.toString() : '',
-        type_logement: client.typeLogement, // "maison" ou "appartement"
-        type_chauffage: client.typeChauffageActuel,
-        // Mapping plus spécifique pour la toiture qui vient de technicalData
-        type_toiture: client.technicalData?.elec?.typeCouverture || '',
-        // Autres champs potentiels si disponibles
-        // proprietaire: ...
-      };
+    const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
+    const TARGET_URL = 'https://qhare.fr/api/lead/update';
 
-      // On appelle notre propre API route qui fait proxy vers Qhare
-      const payload = {
-        qhareId,
-        etat,
-        sous_etat,
-        ...dates,
-        // comment // ON RETIRE LE COMMENTAIRE DU PAYLOAD PRINCIPAL
-        extras
-      };
-
-      // 1. Mise à jour des infos (Etat, Dates, Extras)
-      const response = await fetch('/api/update-qhare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      // 2. Si on a un commentaire, on fait un DEUXIÈME appel dédié uniquement au commentaire
-      // C'est souvent nécessaire car certaines API (dont peut-être celle-ci) ignorent 'commentaire' si d'autres champs majeurs sont mis à jour simultanément.
-      if (comment) {
-        console.log("Envoi du commentaire séparé...");
-        await fetch('/api/update-qhare', {
+    const sendRequest = async (bodyParams: URLSearchParams) => {
+      try {
+        const res = await fetch(TARGET_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            qhareId,
-            comment
-          }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: bodyParams.toString()
         });
+        const json = await res.json();
+        return json;
+      } catch (err) {
+        console.error("Qhare Direct Fetch Error", err);
+        throw err;
+      }
+    };
+
+    try {
+      // 1. CONSTRUCTION PAYLOAD PRINCIPAL
+      const params = new URLSearchParams();
+      params.append('access_token', ACCESS_TOKEN);
+      params.append('id', qhareId);
+
+      if (etat) params.append('etat', etat);
+      if (sous_etat !== undefined) params.append('sous_etat', sous_etat);
+
+      // Dates
+      if (dates?.date_pose) params.append('date_pose', dates.date_pose);
+      if (dates?.date_fin) params.append('date_fin', dates.date_fin);
+
+      // Extras Mapping
+      params.append('surface_habitable', client.surface ? client.surface.toString() : '');
+      params.append('type_logement', client.typeLogement || '');
+      params.append('type_chauffage', client.typeChauffageActuel || '');
+      params.append('type_toiture', client.technicalData?.elec?.typeCouverture || '');
+
+      // Mandatory Fields for Qhare
+      params.append('btob', '0');
+      params.append('raison_sociale', 'Particulier');
+
+      console.log("[Sync Qhare] Sending Main Update...", Object.fromEntries(params));
+      const resultMain = await sendRequest(params);
+
+      // 2. ENVOI COMMENTAIRE (SÉPARÉ)
+      if (comment) {
+        console.log("[Sync Qhare] Sending Comment...", comment.substring(0, 50));
+        const noteParams = new URLSearchParams();
+        noteParams.append('access_token', ACCESS_TOKEN);
+        noteParams.append('id', qhareId);
+        noteParams.append('commentaire', comment);
+        noteParams.append('notes', comment); // Redondance pour sécurité
+        // On ne remet PAS l'état ici pour ne pas écraser
+        await sendRequest(noteParams);
       }
 
-      const result = await response.json();
-
-      if (result.success) {
-        // On affiche tout le résultat pour débugger
-        // toast.success("Réponse Qhare : " + JSON.stringify(result));
-        console.log("Qhare Sync Success:", result);
+      if (resultMain.success !== false) {
+        console.log("Qhare Sync Success:", resultMain);
       } else {
-        toast.error("Echec Qhare : " + JSON.stringify(result));
+        toast.error("Echec Qhare : " + JSON.stringify(resultMain));
       }
-    } catch (e) {
+
+    } catch (e: any) {
       console.error("Erreur sync Qhare", e);
-      toast.error("Erreur synchro Qhare");
+      // On n'affiche l'erreur que si ce n'est pas une erreur réseau "normale" (ex: Offline)
+      // Mais ici c'est important de savoir.
+      toast.error(`Erreur synchro Qhare: ${e.message || 'Inconnue'}`);
     }
   };
 

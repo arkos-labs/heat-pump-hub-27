@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Appointment } from '@/types/client';
+import { Truck, Calendar } from 'lucide-react';
 
 interface SimplifiedAppointment {
   date: string;
@@ -40,7 +41,6 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName, currentCli
   });
 
   // LOGIQUE D'OPTIMISATION DE TOURNEE
-  // On cherche des RDV existants dans le même secteur (2 premiers chiffres du Code Postal)
   const suggestions = allAppointments.filter(rdv => {
     if (!currentClientZip || !rdv.clientZip || !rdv.date) return false;
 
@@ -77,22 +77,38 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName, currentCli
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* OPTIMISATION VISUELLE */}
+          {/* OPTIMISATION VISUELLE - VERSION PRO */}
           {suggestions.length > 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-md p-3 text-sm mb-2">
-              <p className="font-semibold text-green-800 flex items-center gap-1">
-                🌱 Optimisation Tournée (Même secteur) :
-              </p>
-              <div className="flex flex-wrap gap-2 mt-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="bg-blue-100 p-2 rounded-full">
+                  <Truck className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-bold text-blue-900 text-sm">Tournées détectées à proximité</p>
+                  <p className="text-xs text-blue-600">Optimisez vos trajets en groupant les RDV</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 {suggestions.map((s, i) => (
-                  <div
+                  <button
                     key={i}
+                    type="button"
                     onClick={() => handleSelectSuggestion(s.date)}
-                    className="cursor-pointer bg-white border border-green-300 px-2 py-1 rounded text-green-700 hover:bg-green-100 transition-colors text-xs"
+                    className="w-full flex items-center justify-between bg-white hover:bg-blue-50 border border-blue-100 p-2 rounded-md transition-all group"
                   >
-                    📅 {new Date(s.date).toLocaleDateString('fr-FR')} <br />
-                    (Avec {s.clientName} - {s.clientZip})
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-gray-500 group-hover:text-blue-600" />
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-800">{new Date(s.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                        <p className="text-xs text-gray-500">avec {s.clientName}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                      {s.clientZip}
+                    </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -121,11 +137,10 @@ export function AddRdvDialog({ open, onOpenChange, onAdd, clientName, currentCli
             </div>
           </div>
 
-          {/* Type fixed to installation (hidden from user or shown as text) */}
           <div className="space-y-2">
             <Label>Type de rendez-vous</Label>
             <div className="p-2 border rounded-md bg-muted text-muted-foreground text-sm">
-              Installation
+              Installation (Défaut)
             </div>
           </div>
 

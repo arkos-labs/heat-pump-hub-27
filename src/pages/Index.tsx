@@ -349,27 +349,31 @@ const Index = () => {
           const frTime = formatTime(startDateObj);
           const frDateTime = `${frDate} ${frTime}`;
 
-          // 1. Champs standards ISO (pour calendrier intelligent)
-          params.append('date_start', isoStart);
-          params.append('date_end', isoEnd);
+
+          // 4. STRATÉGIE ISO STANDARDISEE (YYYY-MM-DD HH:mm:ss)
+          // Plus robuste pour les API que le format FR
+
+          // NB: On ne surcharge PAS date_pose ici si elle a déjà été passée
+          if (!dates.date_pose) {
+            params.append('date_pose', isoStart);
+          }
+
+          params.append('date_installation', isoStart);
+
+          params.append('date_rdv', isoStart);
+          params.append('date_rendez_vous', isoStart);
           params.append('start', isoStart);
           params.append('end', isoEnd);
 
-          // 4. STRATÉGIE STANDARD + HEURE SÉPARÉE (La plus probable pour affichage calendrier)
-          const standardDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`; // YYYY-MM-DD
-          const standardTime = `${h.padStart(2, '0')}:${min.padStart(2, '0')}`; // HH:mm
+          // Champs date seule / heure seule pour compatibilité legacy
+          const [datePart, timePart] = isoStart.split(' ');
+          params.append('date', datePart);
+          params.append('heure', timePart?.substring(0, 5)); // HH:mm
 
-          params.append('date_pose', standardDate); // Date seule (YYYY-MM-DD)
-          params.append('heure_pose', standardTime); // Heure seule (HH:mm)
-
-          // Champs redondants pour sécurité
-          params.append('date_rdv', `${standardDate} ${standardTime}:00`);
-          params.append('heure_rdv', standardTime);
-          params.append('date_rendez_vous', `${standardDate} ${standardTime}:00`);
-
-          toast.info(`Qhare: Pose=${standardDate} @ ${standardTime}`);
+          toast.info(`Qhare Sync: ${isoStart}`);
         } else {
-          params.append('date_rdv', dates.date_rdv);
+          // Fallback si pas de date traitée
+          if (dates.date_rdv) params.append('date_rdv', dates.date_rdv);
         }
       }
 
@@ -398,10 +402,12 @@ const Index = () => {
         await sendRequest(noteParams);
       }
 
-      if (resultMain.success !== false) {
-        console.log("Qhare Sync Success:", resultMain);
+      // AFFICHAGE REPONSE COMPLETE
+      console.log("Qhare Raw Response:", resultMain);
+      if (resultMain && (resultMain.success || resultMain.status === 'success' || resultMain.id)) {
+        toast.success(`Qhare OK: ${JSON.stringify(resultMain).substring(0, 100)}`);
       } else {
-        toast.error("Echec Qhare : " + JSON.stringify(resultMain));
+        toast.error(`Echec Qhare: ${JSON.stringify(resultMain)}`);
       }
 
     } catch (e: any) {
@@ -455,10 +461,13 @@ const Index = () => {
       // const formattedDate = `${d}/${m}/${y}`; 
       // Qhare semble préférer YYYY-MM-DD (ISO) ou timestamps, essayons le format standard HTML
 
-      // SYNC QHARE: FORCE ETAT 'Pose' pour affichage Planning + Date ISO
+      // SYNC QHARE: FORCE ETAT 'Pose' pour affichage Planning + Date FR
+      const [y, m, d] = rdvData.date.split('-');
+      const datePoseFr = `${d}/${m}/${y}`;
+
       await syncWithQhare(selectedClient, 'Pose', 'Planifié', {
-        date_pose: rdvData.date, // YYYY-MM-DD
-        date_rdv: `${rdvData.date} ${rdvData.time}:00`, // YYYY-MM-DD HH:mm:ss
+        date_pose: datePoseFr, // DD/MM/YYYY
+        date_rdv: `${rdvData.date} ${rdvData.time}:00`, // YYYY-MM-DD HH:mm:ss (Gardé pour le calcul interne ISO)
         type_rdv: rdvData.type // ex: installation
       });
 

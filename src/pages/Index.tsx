@@ -412,9 +412,8 @@ const Index = () => {
 
     } catch (e: any) {
       console.error("Erreur sync Qhare", e);
-      // On n'affiche l'erreur que si ce n'est pas une erreur réseau "normale" (ex: Offline)
-      // Mais ici c'est important de savoir.
-      toast.error(`Erreur synchro Qhare: ${e.message || 'Inconnue'}`);
+      // On affiche l'ID pour aider au debug
+      toast.error(`Erreur synchro Qhare (ID: ${qhareId}): ${e.message || 'Introuvable'}`);
     }
   };
 

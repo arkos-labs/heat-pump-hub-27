@@ -347,19 +347,19 @@ const Index = () => {
           params.append('start', isoStart);
           params.append('end', isoEnd);
 
-          // 3. STRATÉGIE MIXTE (La plus robuste pour les vieux CRM PHP)
-          // date_pose = Date seule au format FR (DD/MM/YYYY)
-          // heure_pose = Heure seule (HH:mm)
-          // date_rdv = Timestamp complet ISO pour les systèmes récents
+          // 4. STRATÉGIE STANDARD + HEURE SÉPARÉE (La plus probable pour affichage calendrier)
+          const standardDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`; // YYYY-MM-DD
+          const standardTime = `${h.padStart(2, '0')}:${min.padStart(2, '0')}`; // HH:mm
 
-          params.append('date_pose', frDate); // DD/MM/YYYY (Date seule !)
-          params.append('heure_pose', frTime); // HH:mm
-          params.append('heure_rdv', frTime);
+          params.append('date_pose', standardDate); // Date seule (YYYY-MM-DD)
+          params.append('heure_pose', standardTime); // Heure seule (HH:mm)
 
-          params.append('date_rdv', isoStart); // YYYY-MM-DD HH:mm:ss
-          params.append('date_rendez_vous', isoStart);
+          // Champs redondants pour sécurité
+          params.append('date_rdv', `${standardDate} ${standardTime}:00`);
+          params.append('heure_rdv', standardTime);
+          params.append('date_rendez_vous', `${standardDate} ${standardTime}:00`);
 
-          toast.info(`Qhare: Pose=${frDate} ${frTime} (Mixte)`);
+          toast.info(`Qhare: Pose=${standardDate} @ ${standardTime}`);
         } else {
           params.append('date_rdv', dates.date_rdv);
         }

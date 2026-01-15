@@ -322,21 +322,39 @@ const Index = () => {
             return `${yy}-${mm}-${dd} ${hh}:${mi}:00`;
           };
 
+          const formatFR = (date: Date) => {
+            const yy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${dd}/${mm}/${yy}`;
+          };
+          const formatTime = (date: Date) => {
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mi = String(date.getMinutes()).padStart(2, '0');
+            return `${hh}:${mi}`;
+          };
+
           const isoStart = formatISO(startDateObj);
           const isoEnd = formatISO(endDateObj);
 
-          // Brute force mapping
-          params.append('date_rdv', isoStart);
-          params.append('date_rendez_vous', isoStart);
+          const frDate = formatFR(startDateObj);
+          const frTime = formatTime(startDateObj);
+          const frDateTime = `${frDate} ${frTime}`;
 
-          // Start/End pairs usually required for calendars
+          // 1. Champs standards ISO (pour calendrier intelligent)
           params.append('date_start', isoStart);
           params.append('date_end', isoEnd);
-
           params.append('start', isoStart);
           params.append('end', isoEnd);
 
-          toast.info(`Synchro RDV: Début=${isoStart} / Fin=${isoEnd}`);
+          // 2. Champs spécifiques CRM Français (souvent DD/MM/YYYY)
+          params.append('date_pose', frDate); // DD/MM/YYYY
+          params.append('date_rdv', frDateTime); // DD/MM/YYYY HH:mm
+          params.append('date_rendez_vous', frDateTime);
+          params.append('heure_rdv', frTime);
+          params.append('heure_pose', frTime);
+
+          toast.info(`Qhare Sync: ${frDateTime} (FR)`);
         } else {
           params.append('date_rdv', dates.date_rdv);
         }

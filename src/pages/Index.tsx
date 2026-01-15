@@ -407,7 +407,7 @@ const Index = () => {
       if (resultMain && (resultMain.success || resultMain.status === 'success' || resultMain.id)) {
         toast.success(`Qhare OK: ${JSON.stringify(resultMain).substring(0, 100)}`);
       } else {
-        toast.error(`Echec Qhare: ${JSON.stringify(resultMain)}`);
+        toast.error(`Echec Qhare (ID: ${qhareId}): ${JSON.stringify(resultMain)}`);
       }
 
     } catch (e: any) {

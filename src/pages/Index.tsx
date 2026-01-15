@@ -272,12 +272,20 @@ const Index = () => {
     const ACCESS_TOKEN = '8G0FCtzJUdLtdsA6Deznd2bc8zhZFzSlz_VxtPtS9Cg';
     const TARGET_URL = 'https://qhare.fr/api/lead/update';
 
+    // Modifié pour utiliser GET (comme le webhook qui fonctionne)
+    // POST posait peut-être problème avec le formatage du body
     const sendRequest = async (bodyParams: URLSearchParams) => {
       try {
-        const res = await fetch(TARGET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: bodyParams.toString()
+        const queryString = bodyParams.toString();
+        const url = `${TARGET_URL}?${queryString}`;
+
+        console.log(`[Sync Qhare] GET Request: ${url}`);
+
+        const res = await fetch(url, {
+          method: 'GET', // Changed to GET
+          headers: {
+            'Accept': 'application/json'
+          }
         });
         const json = await res.json();
         return json;
